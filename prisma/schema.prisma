@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+    userId      String      @id @map("user_id")
+    userName    String      @unique @map("user_name")
+    userPw      String      @map("user_pw")
+
+    highScoreRecord    highScoreRecord[]?
+}
+
+model highScoreRecord {
+    highScoreRecordId       Int     @unique @default(autoincrement()) @map("high_score_record_id)
+    userId                  String  @map("user_id")
+
+    user    user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+}
