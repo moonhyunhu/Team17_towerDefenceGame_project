@@ -1,6 +1,7 @@
 import express from 'express';
 import { createServer } from 'http';
 import initSocket from './init/socket.js';
+import {loadGameAssets} from './init/assets.js'
 import userRouter from './routes/user.router.js';
 import cors from 'cors'; 
 import dotEnv from 'dotenv';
