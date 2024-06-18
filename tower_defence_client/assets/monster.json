@@ -1,0 +1,16 @@
+{
+  "name": "monster",
+  "version": "1.0.0",
+  "data": [
+    { "monster_id": 101, "monster_hp": 100, "monster_level": 1, "monster_power": 10, "monster_gold": 500, "score": 100 },
+    { "monster_id": 102, "monster_hp": 110, "monster_level": 2, "monster_power": 20, "monster_gold": 1000, "score": 200 },
+    { "monster_id": 103, "monster_hp": 120, "monster_level": 3, "monster_power": 30, "monster_gold": 1500, "score": 300 },
+    { "monster_id": 104, "monster_hp": 130, "monster_level": 4, "monster_power": 40, "monster_gold": 2000, "score": 400 },
+    { "monster_id": 105, "monster_hp": 140, "monster_level": 5, "monster_power": 50, "monster_gold": 2500, "score": 500 },
+    { "monster_id": 111, "monster_hp": 300, "monster_level": 11, "monster_power": 100, "monster_gold": 15000, "score": 0 },
+    { "monster_id": 112, "monster_hp": 500, "monster_level": 12, "monster_power": 150, "monster_gold": 20000, "score": 0 },
+    { "monster_id": 113, "monster_hp": 800, "monster_level": 13, "monster_power": 200, "monster_gold": 25000, "score": 0 },
+    { "monster_id": 114, "monster_hp": 1200, "monster_level": 14, "monster_power": 250, "monster_gold": 30000, "score": 0 },
+    { "monster_id": 115, "monster_hp": 99999, "monster_level": 15, "monster_power": 99999, "monster_gold": 99999, "score": 0 }
+  ]
+}

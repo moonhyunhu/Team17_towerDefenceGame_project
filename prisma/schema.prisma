@@ -7,21 +7,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model highScoreRecord {
-  high_score_record_id Int    @unique @default(autoincrement())
-  user_id              String
-  high_score_record    Int    @unique @default(0)
-  user                 user   @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+model user {
+  userId          String            @id @unique @map("user_id")
+  userPw          String            @map("user_pw")
+  highScoreRecord highScoreRecord[]
+}
 
-  @@index([user_id], map: "highScoreRecord_user_id_fkey")
+model highScoreRecord {
+  highScoreRecordId Int    @unique @default(autoincrement()) @map("high_score_record_id")
+  userId            String @map("user_id")
+  highScoreRecord   Int    @unique @default(0) @map("high_score_record")
+  user              user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@index([userId], map: "highScoreRecord_user_id_fkey")
 }
 
 model tower {
-  tower_id Int @unique @default(autoincrement())
-}
-
-model user {
-  user_id         String            @id @unique
-  user_pw         String
-  highScoreRecord highScoreRecord[]
+  towerId Int @unique @default(autoincrement()) @map("tower_id")
 }

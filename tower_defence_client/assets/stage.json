@@ -1,0 +1,11 @@
+{
+  "name": "stage",
+  "version": "1.0.0",
+  "data": [
+    { "stage_id": 1001, "score": 1000, "monster": 101, "boss": 111, "spawn_interval": 3000 },
+    { "stage_id": 1002, "score": 2000, "monster": 102, "boss": 112, "spawn_interval": 2800 },
+    { "stage_id": 1003, "score": 3000, "monster": 103, "boss": 113, "spawn_interval": 2600 },
+    { "stage_id": 1004, "score": 4000, "monster": 104, "boss": 114, "spawn_interval": 2400 },
+    { "stage_id": 1005, "score": 5000, "monster": 105, "boss": 115, "spawn_interval": 2200 }
+  ]
+}
