@@ -1,4 +1,5 @@
 import { Server as SocketIO } from 'socket.io';
+import userHandler from '../handler/user.handler.js';
 
 let io; //전역변수
 
@@ -10,14 +11,10 @@ const initSocket = (server) => {
       allowedHeaders: ["Authorization"] // JWT 등을 허용할 헤더
     }
   });
+  io.attach(server);
 
-  io.on('connection', (socket) => {
-    console.log('a user connected');
-    
-    socket.on('disconnect', () => {
-      console.log('user disconnected');
-    });
-  });
+  // 클라이언트로부터 오는 이벤트를 처리할 핸들러를 서버에 등록
+  userHandler(io);
 };
 
 export { io }; // io를 export

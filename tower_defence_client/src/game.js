@@ -13,6 +13,7 @@ if(!accessToken){
 }
 
 let serverSocket; // 서버 웹소켓 객체
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -290,6 +291,9 @@ Promise.all([
       initGame();
   }
 });
+    serverSocket.on('connection', (data) => {
+      console.log('connection: ', data);
+    })
 });
 
 const buyTowerButton = document.createElement("button");
@@ -304,3 +308,4 @@ buyTowerButton.style.cursor = "pointer";
 buyTowerButton.addEventListener("click", placeNewTower);
 
 document.body.appendChild(buyTowerButton);
+initGame();
