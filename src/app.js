@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import initSocket from './init/socket.js';
 import { loadGameAssets } from './init/assets.js';
 import userRouter from './routes/user.router.js';
-import cors from 'cors'; 
+import cors from 'cors';
 import dotEnv from 'dotenv';
 
 
@@ -26,8 +26,7 @@ app.use(express.static('tower_defence_client'));
 
 initSocket(server);
 
-app.use('/auth', [userRouter]);
-
+app.use('/auth', [userRouter])
 
 server.listen(PORT, async () => {
   console.log(`Server is running on port ${PORT}`)

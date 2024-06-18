@@ -1,4 +1,5 @@
 import { Server as SocketIO } from 'socket.io';
+import userHandler from '../handler/user.handler.js';
 
 let io; //전역변수
 
