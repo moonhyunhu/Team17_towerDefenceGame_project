@@ -2,8 +2,10 @@ import express from 'express';
 import { createServer } from 'http';
 import initSocket from './init/socket.js';
 import userRouter from './routes/user.router.js';
+import { loadGameAssets } from './init/assets.js';
 import cors from 'cors'; 
 import dotEnv from 'dotenv';
+
 
 const app = express();
 const PORT = 5555;
@@ -27,10 +29,11 @@ initSocket(server);
 
 app.use('/auth', [userRouter])
 
+
 server.listen(PORT, async () => {
   try {
     const assets = await loadGameAssets();
-    console.log(assets);
+    // console.log(assets);
     console.log('Assets loaded successfully');
   } catch (error) {
     console.error('Failed to load game assets:', error);

@@ -1,18 +1,23 @@
 import { Server as SocketIO } from 'socket.io';
 
-let io; // 전역 변수로 설정
+let io; //전역변수
 
 const initSocket = (server) => {
   io = new SocketIO(server, {
     cors: {
       origin: '*', // 허용하고자 하는 도메인
-      methods: ["GET", "POST"], //websocket handshake
-      allowedHeaders: ["Authorization"] //JWT
+      methods: ["GET", "POST"], // WebSocket handshake에 허용되는 메서드
+      allowedHeaders: ["Authorization"] // JWT 등을 허용할 헤더
     }
   });
 
-  // 클라이언트로부터 오는 이벤트를 처리할 핸들러를 서버에 등록
-//   userHandler(io);
+  io.on('connection', (socket) => {
+    console.log('a user connected');
+    
+    socket.on('disconnect', () => {
+      console.log('user disconnected');
+    });
+  });
 };
 
 export { io }; // io를 export

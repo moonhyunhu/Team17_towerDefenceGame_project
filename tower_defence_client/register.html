@@ -48,30 +48,31 @@
         const userId = document.getElementById("username").value;
         const userPw = document.getElementById("password").value;
 
-        /* 
-          회원가입 API 호출 후 회원가입 성공 시 index.html로 이동시켜주세요!
-        */
         try {
           const response = await fetch('http://localhost:5555/auth/sign-up', {
-          method: 'POST',
-          headers: {
-          'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ userId, userPw }),
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId, userPw }),
           });
 
+          //서버에서 응답 데이터 가져오기
+          const serverMessage = await response.json();
 
-        if (!response.ok) {
-          throw new Error('회원가입 요청 실패');
+          if (!response) {
+            throw new Error(serverMessage.message);
+          }
+          
+          alert(serverMessage.message);
+          // 회원가입 성공 시 index.html로 이동
+          window.location.reload();
+
+        } catch (error) {
+          // console.error('회원가입 에러:', error);
+          alert(error.message); // 서버에서 전달된 오류 메시지를 알림창으로 표시
         }
-
-        // 회원가입 성공 시 index.html로 이동
-        window.location.href = 'index.html';
-      } catch (error) {
-        console.error('회원가입 에러:', error);
-        alert('회원가입에 실패했습니다. 다시 시도해 주세요.');
-      }
-    });
+      });
 
       document.getElementById("back").addEventListener("click", () => {
         window.location.href = "index.html";

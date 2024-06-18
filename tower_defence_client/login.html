@@ -52,32 +52,36 @@
           로그인 API 호출 후 로그인 성공 시 index.html로 이동시켜주세요!
           이 때, 엑세스 토큰은 어딘가에 저장을 해놔야겠죠?! (로컬스토리지)
         */
-
-        // try{
+        const accessToken=0;
+        const userName = 0;
+        try{
           const response = await fetch('http://localhost:5555/auth/sign-in' , {
             method: 'POST' ,
             headers: {
               'Content-Type' : 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('accessToken')}` 
             },
             body: JSON.stringify({userId, userPw}),
 
           });
-          if(!acceesToken){
-            return res.status(201).json({message:"로그인 실패"});
-          }
+
+          //서버에서 응답 오류 메세지 또는 토큰 가져오기
+          const serverData = await response.json();
+  
           if(!response.ok){ 
-            throw new error('로그인 응답 실패');
+            await alert(serverData.message);
+            throw new Error(serverData.message);
           }
-          const data =await response.json();
+          
           //만약 서버에서 토큰을 받았을 경우 로컬 스토리지에 토큰 저장하기
-          localStorage.setItem('accessToken' , data.acceesToken);
+          await localStorage.setItem('accessToken' , serverData.accessToken);
+          await localStorage.setItem('userName' , serverData.userId);
+          console.log(serverData.userId);
           //로그인 시 게임페이지로 이동하기
           window.location.href = "index.html";
-        // } catch(error) {
-        //   console.log('로그인 에러:');
-        //   alert('로그인 에러');
-        // }
+        } catch(error) {
+          console.log('로그인 에러:');
+          alert('로그인 에러');
+        }
 
       });
 
