@@ -1,0 +1,11 @@
+{
+  "name": "tower",
+  "version": "1.0.0",
+  "data": [
+    { "tower_id": 201, "tower_power": 30, "tower_level": 1, "cooldown": 3000, "tower_const": 3000 },
+    { "tower_id": 202, "tower_power": 40, "tower_level": 2, "cooldown": 2500, "tower_const": 4000 },
+    { "tower_id": 203, "tower_power": 50, "tower_level": 3, "cooldown": 2000, "tower_const": 5000 },
+    { "tower_id": 204, "tower_power": 60, "tower_level": 4, "cooldown": 1500, "tower_const": 6000 },
+    { "tower_id": 205, "tower_power": 70, "tower_level": 5, "cooldown": 1000, "tower_const": 7000 }
+  ]
+}
