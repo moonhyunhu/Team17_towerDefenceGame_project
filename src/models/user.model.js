@@ -1,5 +1,6 @@
 import {prisma} from '../utils/prisma/index.js'
 
+// prisma 사용으로 인해 로직 변경을 위한 회의 필요!
 const users = [];
 
 export const addUser = async (user) => {

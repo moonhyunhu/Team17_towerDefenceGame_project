@@ -6,7 +6,12 @@ import { Tower } from "./tower.js";
   어딘가에 엑세스 토큰이 저장이 안되어 있다면 로그인을 유도하는 코드를 여기에 추가해주세요!
 */
 
-let serverSocket; // 서버 웹소켓 객체
+let serverSocket = io(); // 서버 웹소켓 객체
+
+serverSocket.on('connection', (data) => {
+  console.log('connection: ', data);
+})
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
