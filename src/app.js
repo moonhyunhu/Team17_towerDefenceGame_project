@@ -2,11 +2,12 @@ import express from 'express';
 import { createServer } from 'http';
 import initSocket from './init/socket.js';
 import userRouter from './routes/user.router.js';
+import { loadGameAssets } from './init/assets.js';
 import cors from 'cors'; 
 import dotEnv from 'dotenv';
 
 const app = express();
-const PORT = 5555;
+const PORT = DATABASE_PORT;
 const server = createServer(app);
 
 // 특정 도메인만 허용하는 CORS 설정
