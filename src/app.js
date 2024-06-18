@@ -12,7 +12,7 @@ const server = createServer(app);
 
 // 특정 도메인만 허용하는 CORS 설정
 const corsOptions = {
-  origin: 'http://<>:3000', // 허용하고자 하는 도메인
+  origin: 'http://<>:5555', // 허용하고자 하는 도메인
   optionsSuccessStatus: 200,
 };
 

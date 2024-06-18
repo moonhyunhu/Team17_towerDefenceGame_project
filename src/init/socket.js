@@ -6,7 +6,7 @@ let io; // 전역 변수로 설정
 const initSocket = (server) => {
   io = new SocketIO(server, {
     cors: {
-      origin: 'http://<>:3000', // 허용하고자 하는 도메인
+      origin: 'http://<>:5555', // 허용하고자 하는 도메인
       methods: ["GET", "POST"]
     }
   });
