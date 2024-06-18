@@ -1,13 +1,13 @@
 import { Server as SocketIO } from 'socket.io';
-// import userHandler from '../handlers/user.hander.js';
 
 let io; // 전역 변수로 설정
 
 const initSocket = (server) => {
   io = new SocketIO(server, {
     cors: {
-      origin: 'http://<>:3000', // 허용하고자 하는 도메인
-      methods: ["GET", "POST"]
+      origin: '*', // 허용하고자 하는 도메인
+      methods: ["GET", "POST"], //websocket handshake
+      allowedHeaders: ["Authorization"] //JWT
     }
   });
 
