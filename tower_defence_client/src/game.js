@@ -1,6 +1,7 @@
 import { Base } from './base.js';
 import { Monster } from './monster.js';
 import { Tower } from './tower.js';
+import './Socket.js';
 
 /* 
   어딘가에 엑세스 토큰이 저장이 안되어 있다면 로그인을 유도하는 코드를 여기에 추가해주세요!
@@ -269,10 +270,6 @@ Promise.all([
       initGame();
     }
   */
-  serverSocket.on('connection', (data) => {
-    console.log('connection: ', data);
-  });
-
   // 상태 동기화 이벤트 처리
   serverSocket.on('syncGameState', (data) => {
     console.log('게임 상태 동기화 완료!');
