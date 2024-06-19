@@ -1,9 +1,9 @@
 import express from 'express';
 import { createServer } from 'http';
 import initSocket from './init/socket.js';
-import userRouter from './routes/user.router.js';
 import { loadGameAssets } from './init/assets.js';
-import cors from 'cors'; 
+import userRouter from './routes/user.router.js';
+import cors from 'cors';
 import dotEnv from 'dotenv';
 
 const app = express();
@@ -19,7 +19,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions)); // CORS 미들웨어 사용
 
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static('tower_defence_client'));
@@ -28,8 +27,9 @@ initSocket(server);
 
 app.use('/auth', [userRouter])
 
-
 server.listen(PORT, async () => {
+  console.log(`Server is running on port ${PORT}`)
+
   try {
     const assets = await loadGameAssets();
     // console.log(assets);
