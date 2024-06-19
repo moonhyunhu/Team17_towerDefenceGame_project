@@ -23,6 +23,7 @@ const ctx = canvas.getContext('2d');
 
 let currentBoolean = false;
 let killCount = 0;
+let stage =0;
 
 const MONSTER_CONFIG = monsterData.data;
 const STAGE_CONFIG = stageData.data;
@@ -30,20 +31,23 @@ const TOWER_CONFIG = towerData.data;
 
 const NUM_OF_MONSTERS = 5; // 몬스터 개수
 
-let userGold = 5000; // 유저 골드
+let userGold = 0; // 유저 골드
 let base; // 기지 객체
-let baseHp = 500; // 기지 체력
+let baseHp = 0; // 기지 체력
 
 let towerCost = TOWER_CONFIG[0].tower_const; // 타워 구입 비용
-let numOfInitialTowers = 3; // 초기 타워 개수
+let numOfInitialTowers = 0; // 초기 타워 개수
 let monsterLevel = MONSTER_CONFIG[0].monster_id; // 몬스터 레벨
-let monsterSpawnInterval = 100//STAGE_CONFIG[0].spawn_interval; // 몬스터 생성 주기
+let monsterSpawnInterval = 0//STAGE_CONFIG[0].spawn_interval; // 몬스터 생성 주기
 const monsters = [];
 const towers = [];
 
 let score = 0; // 게임 점수
 let highScore = 0; // 기존 최고 점수
 let isInitGame = false;
+let pause = false; // 일시정지
+let speedMultiple = 1; // 배속
+let intervalId; // 몬스터 반복 소환
 
 // 이미지 로딩 파트
 const backgroundImage = new Image();
@@ -210,17 +214,17 @@ function gameLoop() {
   // 타워 그리기 및 몬스터 공격 처리
   towers.forEach((tower) => {
     tower.draw(ctx, towerImage);
-    tower.updateCooldown();
-    monsters.forEach((monster) => {
-      const distance = Math.sqrt(
-        Math.pow(tower.x - monster.x, 2) + Math.pow(tower.y - monster.y, 2),
-      );
-      //console.log('asdf', distance);
-      if (distance < tower.range) {
-        tower.attack(monster);
-      }
-    });
-  });
+    if (!pause) {
+      tower.updateCooldown(speedMultiple);
+      monsters.forEach((monster) => {
+        const distance = Math.sqrt(
+          Math.pow(tower.x - monster.x, 2) + Math.pow(tower.y - monster.y, 2),
+        );
+        if (distance < tower.range) {
+          tower.attack(monster);
+        }
+      });
+    }});
 
   // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
   base.draw(ctx, baseImage);
@@ -228,7 +232,7 @@ function gameLoop() {
   for (let i = monsters.length - 1; i >= 0; i--) {
     const monster = monsters[i];
     if (monster.hp > 0) {
-      const isDestroyed = monster.move(base);
+      const isDestroyed = monster.move(base, pause, speedMultiple);
       if (isDestroyed) {
         /* 게임 오버 */
         sendEvent(16, {});
@@ -268,9 +272,41 @@ function initGame() {
   placeInitialTowers(); // 설정된 초기 타워 개수만큼 사전에 타워 배치
   placeBase(); // 기지 배치
 
-  setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
+  intervalId = setInterval(spawnMonster, (monsterSpawnInterval)); // 설정된 몬스터 생성 주기마다 몬스터 생성
   gameLoop(); // 게임 루프 최초 실행
   isInitGame = true;
+}
+
+function pauseGame() {
+  console.log('게임 일시정지!');
+  pause = true;
+  document.body.removeChild(pauseButton);
+  document.body.appendChild(replayButton);
+}
+
+function replayGame() {
+  console.log('게임 다시 시작!');
+  pause = false;
+  document.body.removeChild(replayButton);
+  document.body.appendChild(pauseButton);
+}
+
+function gameSpeed() {
+  console.log('1배속!');
+  speedMultiple = 1;
+  document.body.removeChild(doubleSpeedButton);
+  document.body.appendChild(speedButton);
+  clearInterval(intervalId);
+  intervalId = setInterval(spawnMonster, (monsterSpawnInterval));
+}
+
+function gameDoubleSpeed() {
+  console.log('2배속!');
+  speedMultiple = 2;
+  document.body.removeChild(speedButton);
+  document.body.appendChild(doubleSpeedButton);
+  clearInterval(intervalId);
+  intervalId = setInterval(spawnMonster, (monsterSpawnInterval / speedMultiple));
 }
 
 // 이미지 로딩 완료 후 서버와 연결하고 게임 초기화
@@ -297,6 +333,16 @@ Promise.all([
   serverSocket.on('disconnect', () => {
     console.log('서버와 연결이 종료됨');
   });
+  serverSocket.on('gameStart',(data)=>{
+    console.log('게임 시작');
+    stage = data.stage;
+
+  });
+  serverSocket.on('gameEnd',(data)=>{});
+  serverSocket.on('initialTower',()=>{});
+  serverSocket.on('killMonster',(data)=>{
+
+  });
 
   /* 
     서버의 이벤트들을 받는 코드들은 여기다가 쭉 작성해주시면 됩니다! 
@@ -318,8 +364,8 @@ Promise.all([
       initGame();
     }
   });
+  
 });
-
 const buyTowerButton = document.createElement('button');
 buyTowerButton.textContent = '타워 구입';
 buyTowerButton.style.position = 'absolute';
@@ -332,4 +378,53 @@ buyTowerButton.style.cursor = 'pointer';
 buyTowerButton.addEventListener('click', placeNewTower);
 
 document.body.appendChild(buyTowerButton);
+
+const pauseButton = document.createElement('button');
+pauseButton.textContent = '||';
+pauseButton.style.position = 'absolute';
+pauseButton.style.top = '10px';
+pauseButton.style.right = '130px';
+pauseButton.style.padding = '11px 20px';
+pauseButton.style.fontSize = '16px';
+pauseButton.style.cursor = 'pointer';
+
+pauseButton.addEventListener('click', pauseGame);
+
+const replayButton = document.createElement('button');
+replayButton.textContent = '▶';
+replayButton.style.position = 'absolute';
+replayButton.style.top = '10px';
+replayButton.style.right = '130px';
+replayButton.style.padding = '10px 16px';
+replayButton.style.fontSize = '16px';
+replayButton.style.cursor = 'pointer';
+
+replayButton.addEventListener('click', replayGame);
+
+document.body.appendChild(pauseButton);
+
+const speedButton = document.createElement('button');
+speedButton.textContent = '1x';
+speedButton.style.position = 'absolute';
+speedButton.style.top = '10px';
+speedButton.style.right = '200px';
+speedButton.style.padding = '11px 16px';
+speedButton.style.fontSize = '16px';
+speedButton.style.cursor = 'pointer';
+
+speedButton.addEventListener('click', gameDoubleSpeed);
+
+const doubleSpeedButton = document.createElement('button');
+doubleSpeedButton.textContent = '2x';
+doubleSpeedButton.style.position = 'absolute';
+doubleSpeedButton.style.top = '10px';
+doubleSpeedButton.style.right = '200px';
+doubleSpeedButton.style.padding = '11px 16px';
+doubleSpeedButton.style.fontSize = '16px';
+doubleSpeedButton.style.cursor = 'pointer';
+
+doubleSpeedButton.addEventListener('click', gameSpeed);
+
+document.body.appendChild(speedButton);
+
 initGame();

@@ -4,7 +4,8 @@
 import { addUser } from '../models/user.model.js';
 import { v4 as uuidv4 } from 'uuid';
 import { handleConnection, handleDisconnect, handleEvent } from './helper.js';
-import { createStage } from '../models/stage.model.js';
+import { clearStage, createStage, setStage } from '../models/stage.model.js';
+import { getGameAssets } from '../init/assets.js';
 
 
 const registerHandler = (io) => {
@@ -19,9 +20,14 @@ const registerHandler = (io) => {
 
     //
     handleConnection(socket, userUUID);
+    socket.on('gameStart',{});
+    socket.on('gameEnd',()=>{});
+    socket.on('initialTower',()=>{});
+    socket.on('killMonster',()=>{});
+    socket.on('killMonster',()=>{});
 
     //event라는 이름으로 발생하는 모든 이벤트를 handlerEvent 함수로 전달
-    socket.on('event', (data) => handleEvent(io, socket, data));
+    //socket.on('event', (data) => handleEvent(io, socket, data));
 
     //접속 해제시 이벤트
     //io.on은 서버 대상 전체 이벤트 socket.on은 하나의 유저 대상인 이벤트 처리
