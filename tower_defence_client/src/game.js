@@ -33,6 +33,8 @@ let score = 0; // 게임 점수
 let highScore = 0; // 기존 최고 점수
 let isInitGame = false;
 let pause = false; // 일시정지
+let speedMultiple = 1; // 배속
+let intervalId; // 몬스터 반복 소환
 
 // 이미지 로딩 파트
 const backgroundImage = new Image();
@@ -199,7 +201,7 @@ function gameLoop() {
   towers.forEach((tower) => {
     tower.draw(ctx, towerImage);
     if (!pause) {
-      tower.updateCooldown();
+      tower.updateCooldown(speedMultiple);
       monsters.forEach((monster) => {
         const distance = Math.sqrt(
           Math.pow(tower.x - monster.x, 2) + Math.pow(tower.y - monster.y, 2),
@@ -216,7 +218,7 @@ function gameLoop() {
   for (let i = monsters.length - 1; i >= 0; i--) {
     const monster = monsters[i];
     if (monster.hp > 0) {
-      const isDestroyed = monster.move(base, pause);
+      const isDestroyed = monster.move(base, pause, speedMultiple);
       if (isDestroyed) {
         /* 게임 오버 */
         alert('게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ');
@@ -242,7 +244,7 @@ function initGame() {
   placeInitialTowers(); // 설정된 초기 타워 개수만큼 사전에 타워 배치
   placeBase(); // 기지 배치
 
-  setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
+  intervalId = setInterval(spawnMonster, (monsterSpawnInterval)); // 설정된 몬스터 생성 주기마다 몬스터 생성
   gameLoop(); // 게임 루프 최초 실행
   isInitGame = true;
 }
@@ -250,7 +252,6 @@ function initGame() {
 function pauseGame() {
   console.log('게임 일시정지!');
   pause = true;
-  console.log(pause);
   document.body.removeChild(pauseButton);
   document.body.appendChild(replayButton);
 }
@@ -258,9 +259,26 @@ function pauseGame() {
 function replayGame() {
   console.log('게임 다시 시작!');
   pause = false;
-  console.log(pause);
   document.body.removeChild(replayButton);
   document.body.appendChild(pauseButton);
+}
+
+function gameSpeed() {
+  console.log('1배속!');
+  speedMultiple = 1;
+  document.body.removeChild(doubleSpeedButton);
+  document.body.appendChild(speedButton);
+  clearInterval(intervalId);
+  intervalId = setInterval(spawnMonster, (monsterSpawnInterval));
+}
+
+function gameDoubleSpeed() {
+  console.log('2배속!');
+  speedMultiple = 2;
+  document.body.removeChild(speedButton);
+  document.body.appendChild(doubleSpeedButton);
+  clearInterval(intervalId);
+  intervalId = setInterval(spawnMonster, (monsterSpawnInterval / speedMultiple));
 }
 
 // 이미지 로딩 완료 후 서버와 연결하고 게임 초기화
@@ -339,3 +357,27 @@ replayButton.style.cursor = 'pointer';
 replayButton.addEventListener('click', replayGame);
 
 document.body.appendChild(pauseButton);
+
+const speedButton = document.createElement('button');
+speedButton.textContent = '1x';
+speedButton.style.position = 'absolute';
+speedButton.style.top = '10px';
+speedButton.style.right = '200px';
+speedButton.style.padding = '11px 16px';
+speedButton.style.fontSize = '16px';
+speedButton.style.cursor = 'pointer';
+
+speedButton.addEventListener('click', gameDoubleSpeed);
+
+const doubleSpeedButton = document.createElement('button');
+doubleSpeedButton.textContent = '2x';
+doubleSpeedButton.style.position = 'absolute';
+doubleSpeedButton.style.top = '10px';
+doubleSpeedButton.style.right = '200px';
+doubleSpeedButton.style.padding = '11px 16px';
+doubleSpeedButton.style.fontSize = '16px';
+doubleSpeedButton.style.cursor = 'pointer';
+
+doubleSpeedButton.addEventListener('click', gameSpeed);
+
+document.body.appendChild(speedButton);

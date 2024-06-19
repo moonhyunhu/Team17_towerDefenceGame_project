@@ -40,9 +40,9 @@ export class Tower {
     }
   }
 
-  updateCooldown() {
+  updateCooldown(speedMultiple) {
     if (this.cooldown > 0) {
-      this.cooldown--;
+      this.cooldown -= 1 * speedMultiple;
     }
   }
 }
