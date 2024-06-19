@@ -7,6 +7,14 @@ const socket = io('http://localhost:5555', {
 });
 
 let userId = null;
+socket.on('connection', (data) => {
+  console.log('connection: ', data);
+  userId = data.uuid;
+});
+
+socket.on('response', (data) => {
+  console.log(data);
+});
 const sendEvent = (handlerId, payload) => {
   socket.emit('event', {
     userId,

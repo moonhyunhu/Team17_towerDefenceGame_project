@@ -5,6 +5,7 @@ import { sendEvent } from './socket.js';
 import monsterData from '../assets/monster.json' with { type: 'json' };
 import stageData from '../assets/stage.json' with { type: 'json' };
 import towerData from '../assets/tower.json' with { type: 'json' };
+import './socket.js';
 
 /* 
   어딘가에 엑세스 토큰이 저장이 안되어 있다면 로그인을 유도하는 코드를 여기에 추가해주세요!
@@ -20,6 +21,9 @@ let serverSocket; // 서버 웹소켓 객체
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+let currentBoolean = false;
+let killCount = 0;
+
 const MONSTER_CONFIG = monsterData.data;
 const STAGE_CONFIG = stageData.data;
 const TOWER_CONFIG = towerData.data;
@@ -32,8 +36,8 @@ let baseHp = 500; // 기지 체력
 
 let towerCost = TOWER_CONFIG[0].tower_const; // 타워 구입 비용
 let numOfInitialTowers = 3; // 초기 타워 개수
-let monsterLevel = 1; // 몬스터 레벨
-let monsterSpawnInterval = 100; // 몬스터 생성 주기
+let monsterLevel = MONSTER_CONFIG[0].monster_id; // 몬스터 레벨
+let monsterSpawnInterval = 100//STAGE_CONFIG[0].spawn_interval; // 몬스터 생성 주기
 const monsters = [];
 const towers = [];
 
@@ -163,9 +167,8 @@ function placeInitialTowers() {
     const tower = new Tower(x, y, towerCost);
     towers.push(tower);
     tower.draw(ctx, towerImage);
-    
   }
-  sendEvent(15,{towers})
+  sendEvent(15, { towers });
 }
 
 function placeNewTower() {
@@ -212,6 +215,7 @@ function gameLoop() {
       const distance = Math.sqrt(
         Math.pow(tower.x - monster.x, 2) + Math.pow(tower.y - monster.y, 2),
       );
+      //console.log('asdf', distance);
       if (distance < tower.range) {
         tower.attack(monster);
       }
@@ -227,7 +231,7 @@ function gameLoop() {
       const isDestroyed = monster.move(base);
       if (isDestroyed) {
         /* 게임 오버 */
-        sendEvent(16,{});
+        sendEvent(16, {});
         alert('게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ');
         location.reload();
       }
@@ -237,6 +241,17 @@ function gameLoop() {
       monsters.splice(i, 1);
       score += 20;
       userGold += 100;
+      killCount++;
+      if (score >= STAGE_CONFIG[0].score && !currentBoolean) {
+        currentBoolean = true;
+        sendEvent(11, { currentStage: 1001, targetStage: 1002, message: 'changeStage' });
+        monsterLevel = MONSTER_CONFIG[1].monster_level
+      }
+      if (score >= STAGE_CONFIG[1].score && currentBoolean) {
+        currentBoolean = false;
+        sendEvent(11, { currentStage: 1002, targetStage: 1003, message: 'changeStage' });
+        monsterLevel = MONSTER_CONFIG[2].monster_level
+      }
     }
   }
 
@@ -283,24 +298,6 @@ Promise.all([
     console.log('서버와 연결이 종료됨');
   });
 
-  serverSocket.on('gameStart', (data) => {
-    if (data.status === 'success') {
-      userGold = 5000;
-      baseHp = 500;
-      score = 0;
-
-      if (!isInitGame) {
-        initGame();
-      }
-    } else {
-      alert('게임 초기 정보 검증에 실패했습니다.');
-    }
-    console.log(data);
-  });
-
-  
-  //sendEvent(11,{currentStage:1001,targetStage:1002})
-
   /* 
     서버의 이벤트들을 받는 코드들은 여기다가 쭉 작성해주시면 됩니다! 
     e.g. serverSocket.on("...", () => {...});
@@ -311,16 +308,15 @@ Promise.all([
   */
 
   // 상태 동기화 이벤트 처리
-  serverSocket.on('syncGameState', (state) => {
-    console.log('게임 상태 동기화', state);
+  serverSocket.on('syncGameState', (data) => {
+    console.log('게임 상태 동기화 완료!');
+    towerCost = data.towerCost;
+    monsterLevel = data.monsterLevel;
+    monsterSpawnInterval = data.monsterSpawnInterval;
     // 상태를 반영하여 게임 초기화
     if (!isInitGame) {
       initGame();
     }
-  });
-  serverSocket.on('connection', (data) => {
-    console.log('connection: ', data);
-    
   });
 });
 

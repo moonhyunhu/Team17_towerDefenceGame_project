@@ -8,13 +8,20 @@ import { getGameAssets } from '../init/assets.js';
 export const handleConnection = (socket, uuid) => {
   console.log(`New user connected: ${uuid} with socket ID ${socket.id}`);
   console.log('Current users:', getUsers());
+  createStage(uuid);
 
   socket.emit('connection', { uuid });
+  socket.emit('syncGameState', {
+    uuid,
+    towerCost: 3000,
+    monsterLevel: 1,
+    monsterSpawnInterval: 3000,
+  });
 };
 
 export const handleDisconnect = (socket, uuid) => {
   removeUser(uuid); // 사용자 삭제
-  console.log(`User disconnected: ${socket.id}`);
+  console.log(`User disconnected: ${uuid}`);
   console.log('Current users:', getUsers());
 };
 

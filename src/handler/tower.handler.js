@@ -17,7 +17,7 @@ export const startTower = async (uuid, payload) => {
 };
 
 //게임 종료 시 데이터베이스에 저장된 타워 삭제
-export const endTower = async (uuid, payload) => {
+export const endTower = async (uuid,payload) => {
   await prisma.tower.deleteMany();
   console.log('게임 끝나고 타워데이터 삭제완료');
   return { status: 'success', handler: 16 };
