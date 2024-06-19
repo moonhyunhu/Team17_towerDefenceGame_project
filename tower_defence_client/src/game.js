@@ -32,7 +32,7 @@
   const towers = [];
 
 let score = 0; // 게임 점수
-let highScore = 0; // 기존 최고 점수
+export let highScore = 0; // 기존 최고 점수
 let isInitGame = false;
 let pause = false; // 일시정지
 let speedMultiple = 1; // 배속
@@ -224,6 +224,27 @@ let intervalId; // 몬스터 반복 소환
       if (isDestroyed) {
         /* 게임 오버 */
         gameOverScreen();
+        //highscore 비교 + 갱신
+        if (highScore < score) {
+          highScore = score;
+          // 서버로 최고 점수 업데이트 요청
+          fetch('http://localhost:5555/auth/highScore', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer '+ accessToken
+            },
+            body: JSON.stringify({ score: highScore }),
+          })
+          .then(response => response.json())
+          .then(data => {
+            console.log('최고 점수 갱신 완료:', data);
+          })
+          .catch(error => {
+            console.error('최고 점수 갱신 실패', error);
+          });
+          
+        }
         return;
       }
       monster.draw(ctx);
