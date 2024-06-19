@@ -32,7 +32,8 @@
   const towers = [];
 
 let score = 0; // 게임 점수
-export let highScore = 0; // 기존 최고 점수
+let highScore = 0; // 기존 최고 점수 (개인)
+let highScoreAll = 0; // 기존 최고 점수 (전체)
 let isInitGame = false;
 let pause = false; // 일시정지
 let speedMultiple = 1; // 배속
@@ -191,13 +192,15 @@ let intervalId; // 몬스터 반복 소환
 
     ctx.font = '25px Times New Roman';
     ctx.fillStyle = 'skyblue';
-    ctx.fillText(`최고 기록: ${highScore}`, 100, 50); // 최고 기록 표시
+    ctx.fillText(`현재 계정 최고 기록: ${highScore}`, 100, 50); // 최고 기록 표시
     ctx.fillStyle = 'white';
     ctx.fillText(`점수: ${score}`, 100, 100); // 현재 스코어 표시
     ctx.fillStyle = 'yellow';
     ctx.fillText(`골드: ${userGold}`, 100, 150); // 골드 표시
     ctx.fillStyle = 'black';
     ctx.fillText(`현재 레벨: ${monsterLevel}`, 100, 200); // 최고 기록 표시
+    ctx.fillStyle= 'red';
+    ctx.fillText(`전체 계정 최고 기록: ${highScoreAll}`, 100,250) //전체 최고 기록 표시
 
   // 타워 그리기 및 몬스터 공격 처리
   towers.forEach((tower) => {
@@ -433,3 +436,21 @@ function gameOverScreen() {
 function gameRestart(){
   location.reload();
 }
+
+// 최고 기록 점수 가져오기
+fetch('http://localhost:5555/auth/highScore', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer ' + accessToken,
+  },
+})
+.then(response => response.json())
+.then(data => {
+  console.log(data.highScoreAll[0])
+  highScore = +data.highScore.highScoreRecord;
+  highScoreAll = +data.highScoreAll[0].highScoreRecord;
+  initGame(); 
+})
+.catch(error => {
+  console.error('최고 점수 가져오기 실패', error);
+});
