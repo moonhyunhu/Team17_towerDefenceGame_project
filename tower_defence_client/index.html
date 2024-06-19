@@ -58,16 +58,17 @@
       const buttonContainer = document.getElementById("button-container");
       const accessToken = localStorage.getItem("accessToken");
       const userId = localStorage.getItem("userName");
-      let logoutTime; // 자동 로그아웃 시간 저장 변수
+      
+      let logoutTime = localStorage.getItem("logoutTime");
 
       // 로그인 상태 체크
       if (accessToken && userId) {
-        // 토큰 만료 시간 설정 (현재 시간으로부터 10분 후)
-        const expirationTime = new Date().getTime() + (10 * 60 * 1000); // 10분 = 600,000 밀리초
-
-        localStorage.setItem("logoutTime", expirationTime);
+        if (!logoutTime) {
+        logoutTime = new Date().getTime() + (10 * 60 * 1000); // 10분 = 600,000 밀리초
+        localStorage.setItem("logoutTime", logoutTime);
+        }
         showLoggedInUI(userId);
-        startLogoutTimer(expirationTime); // 자동 로그아웃 타이머 시작
+        startLogoutTimer(logoutTime); // 자동 로그아웃 타이머 시작
       } else {
         showLoggedOutUI();
       }
