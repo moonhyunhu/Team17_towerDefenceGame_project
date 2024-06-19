@@ -285,6 +285,7 @@ function pauseGame() {
   pause = true;
   document.body.removeChild(pauseButton);
   document.body.appendChild(replayButton);
+  clearInterval(intervalId);
 }
 
 function replayGame() {
@@ -292,6 +293,7 @@ function replayGame() {
   pause = false;
   document.body.removeChild(replayButton);
   document.body.appendChild(pauseButton);
+  intervalId = setInterval(spawnMonster, monsterSpawnInterval);
 }
 
 function gameSpeed() {
@@ -300,7 +302,7 @@ function gameSpeed() {
   document.body.removeChild(doubleSpeedButton);
   document.body.appendChild(speedButton);
   clearInterval(intervalId);
-  intervalId = setInterval(spawnMonster, (monsterSpawnInterval));
+  intervalId = setInterval(spawnMonster, monsterSpawnInterval);
 }
 
 function gameDoubleSpeed() {
