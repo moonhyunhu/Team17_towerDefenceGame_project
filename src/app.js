@@ -7,6 +7,7 @@ import cors from 'cors';
 import dotEnv from 'dotenv';
 
 
+
 const app = express();
 const PORT = 5555;
 const server = createServer(app);
@@ -14,7 +15,7 @@ const server = createServer(app);
 // 특정 도메인만 허용하는 CORS 설정
 const corsOptions = {
   origin: '*', // 허용하고자 하는 도메인
-  allowedHeaders: ["Authorization"], // JWT
+  allowedHeaders: ["Content-type","Authorization"], // JWT
   optionsSuccessStatus: 200
 };
 

@@ -1,9 +1,18 @@
-const userGold ={};
 
-export const getUserGold=(uuid)=>{
-    return userGold[uuid] || (userGold[uuid] = 100);
-}
+const userGold = {}; // Object to store user gold amounts
 
-export const updateUserGold=(uuid,amount)=>{
-    userGold[uuid] = amount;
-}
+// Function to initialize user's gold to 5000
+export const createUserGold = (uuid) => {
+  userGold[uuid] = 5000; // Set initial gold to 5000
+  console.log(userGold[uuid]); // Log initial gold amount (optional)
+};
+
+// Function to retrieve user's current gold amount
+export const getUserGold = (uuid) => {
+  return userGold[uuid]; 
+};
+
+// Function to update user's gold amount
+export const updateUserGold = (uuid, amount) => {
+  userGold[uuid] = amount; // Update user's gold amount
+};

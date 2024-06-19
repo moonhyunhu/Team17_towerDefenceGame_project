@@ -1,6 +1,8 @@
 import { Base } from './base.js';
 import { Monster } from './monster.js';
 import { Tower } from './tower.js';
+import towerData from '../assets/tower.json' with {type :'json'};
+import { sendEvent} from './socket.js';
 
 /* 
   어딘가에 엑세스 토큰이 저장이 안되어 있다면 로그인을 유도하는 코드를 여기에 추가해주세요!
@@ -18,14 +20,15 @@ const ctx = canvas.getContext('2d');
 
 const NUM_OF_MONSTERS = 5; // 몬스터 개수
 
-let userGold = 5000; // 유저 골드
+// let userGold = null; // 유저 골드
 let base; // 기지 객체
-let baseHp = 500; // 기지 체력
+let baseHp = 0; // 기지 체력
+let userGold = 0
 
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 3; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
-let monsterSpawnInterval = 0; // 몬스터 생성 주기
+let monsterSpawnInterval = 50000; // 몬스터 생성 주기
 const monsters = [];
 const towers = [];
 
@@ -159,14 +162,34 @@ function placeInitialTowers() {
 }
 
 function placeNewTower() {
+
   /* 
     타워를 구입할 수 있는 자원이 있을 때 타워 구입 후 랜덤 배치하면 됩니다.
     빠진 코드들을 채워넣어주세요! 
-  */
-  const { x, y } = getRandomPositionNearPath(200);
-  const tower = new Tower(x, y);
-  towers.push(tower);
-  tower.draw(ctx, towerImage);
+  */  
+    console.log('Tower Data:', towerData);
+    const lowestLevelTower = towerData.data.find((data) => data.tower_level === 1);
+    console.log('Lowest Level Tower:', lowestLevelTower);
+
+  if (userGold >= towerCost) {
+    const { x, y } = getRandomPositionNearPath(200);
+    const tower = new Tower(x, y,towerCost);
+    towers.push(tower);
+    tower.draw(ctx, towerImage);
+
+    userGold -= towerCost;
+
+    const payload = {
+      userGold,
+      tower_id:lowestLevelTower.tower_id,
+      position: { x, y },
+    };
+
+    sendEvent(13, payload);
+
+  } else {
+    console.log(`골드가 부족합니다 현재 나의 골드:${userGold}`);
+  }
 }
 
 function placeBase() {
@@ -202,7 +225,6 @@ function gameLoop() {
       const distance = Math.sqrt(
         Math.pow(tower.x - monster.x, 2) + Math.pow(tower.y - monster.y, 2),
       );
-      console.log('asdf', distance);
       if (distance < tower.range) {
         tower.attack(monster);
       }
@@ -254,14 +276,28 @@ Promise.all([
   new Promise((resolve) => (pathImage.onload = resolve)),
   ...monsterImages.map((img) => new Promise((resolve) => (img.onload = resolve))),
 ]).then(() => {
+  
+  
+  
   /* 서버 접속 코드 (여기도 완성해주세요!) */
+  
   serverSocket = io('http://localhost:5555', {
     auth: {
       token: accessToken, // 토큰이 저장된 어딘가에서 가져와야 합니다!
     },
   });
 
-  /* 
+
+  serverSocket.on('connect', () => {
+    console.log('서버와 연결됨');
+    serverSocket.emit('requestUserGold');
+  });
+
+  serverSocket.on('disconnect', () => {
+    console.log('서버와 연결이 종료됨');
+  });
+
+ /* 
     서버의 이벤트들을 받는 코드들은 여기다가 쭉 작성해주시면 됩니다! 
     e.g. serverSocket.on("...", () => {...});
     이 때, 상태 동기화 이벤트의 경우에 아래의 코드를 마지막에 넣어주세요! 최초의 상태 동기화 이후에 게임을 초기화해야 하기 때문입니다! 
@@ -269,8 +305,27 @@ Promise.all([
       initGame();
     }
   */
+
+
   serverSocket.on('connection', (data) => {
     console.log('connection: ', data);
+  });
+
+  serverSocket.on('userGold', (data) => {
+    console.log('Received userGold event with data:', data); // Debug log
+    userGold = data.userGold; // Update the client-side userGold with the received value
+    console.log('User Gold:', userGold);
+  });
+
+  serverSocket.on('towerPurchaseResult', (result) => {
+    console.log('Received towerPurchaseResult:', result);
+    if (result.status === 'success') {
+      // Handle successful tower purchase (e.g., update game state)
+      console.log('Tower purchase successful! Position:', result.position);
+    } else {
+      // Handle failed tower purchase (e.g., display error message)
+      console.log('Tower purchase failed:', result.message);
+    }
   });
 
   // 상태 동기화 이벤트 처리
@@ -279,10 +334,18 @@ Promise.all([
     towerCost = data.towerCost;
     monsterLevel = data.monsterLevel;
     monsterSpawnInterval = data.monsterSpawnInterval;
+  
+    serverSocket.on('syncGameState', (state) => {
+    console.log('게임 상태 동기화', state);
     // 상태를 반영하여 게임 초기화
     if (!isInitGame) {
       initGame();
     }
+  });
+
+
+  serverSocket.on('connection', (data) => {
+    console.log('connection: ', data);
   });
 });
 
@@ -298,3 +361,7 @@ buyTowerButton.style.cursor = 'pointer';
 buyTowerButton.addEventListener('click', placeNewTower);
 
 document.body.appendChild(buyTowerButton);
+
+
+initGame();
+});
