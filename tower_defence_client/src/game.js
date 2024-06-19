@@ -20,7 +20,7 @@ const NUM_OF_MONSTERS = 5; // 몬스터 개수
 
 let userGold = 5000; // 유저 골드
 let base; // 기지 객체
-let baseHp = 500; // 기지 체력
+let baseHp = 5; // 기지 체력
 
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 3; // 초기 타워 개수
@@ -202,7 +202,7 @@ function gameLoop() {
       const distance = Math.sqrt(
         Math.pow(tower.x - monster.x, 2) + Math.pow(tower.y - monster.y, 2),
       );
-      console.log('asdf', distance);
+      // console.log('asdf', distance);
       if (distance < tower.range) {
         tower.attack(monster);
       }
@@ -223,12 +223,15 @@ function gameLoop() {
         if (isDestroyed) {
           /* 게임 오버 */
           gameOver = true;
-          alert("게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ");
-          location.reload();
+          // alert("게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ");
+          gameOverScreen();
+          return;
         }
         monster.draw(ctx);
       } else {
         /* 몬스터가 죽었을 때 */
+        score +=1; // 몬스터의 score를 현재 게임의 score에 추가
+        userGold += 1;
         monsters.splice(i, 1);
       }
     }
@@ -305,3 +308,37 @@ buyTowerButton.style.cursor = 'pointer';
 buyTowerButton.addEventListener('click', placeNewTower);
 
 document.body.appendChild(buyTowerButton);
+
+
+//게임오버 시 나오는 스크린 함수
+function gameOverScreen() {
+  const gameOverElement = document.createElement('div');
+  gameOverElement.style.position = 'absolute';
+  gameOverElement.style.width = '100%';
+  gameOverElement.style.height = '100%';
+  gameOverElement.style.backgroundImage= 'url("../images/gameOver.png")'; 
+  gameOverElement.style.backgroundSize = 'cover'; //배경이미지 화면과 같이 설정
+  gameOverElement.style.color = 'white';
+  gameOverElement.style.fontSize = '40px';
+  gameOverElement.style.display = 'flex';
+  gameOverElement.style.justifyContent = 'center';
+  gameOverElement.style.alignItems = 'center';
+  gameOverElement.innerHTML = `
+    <div style="text-align: center;">
+      <h2 style="color: red";>Game Over</h2>
+      <h3 style="color: red";>스파르타 본부를 지키지 못했습니다...</h3>
+      <button id="restartButton" style="padding: 10px 20px; font-size: 24px; cursor: pointer;">게임 다시 시작</button>
+    </div>  
+  `;
+
+  const restartButton = gameOverElement.querySelector('#restartButton');
+  restartButton.addEventListener('click', restartGame);
+
+  document.body.appendChild(gameOverElement);
+
+}
+
+function restartGame() {
+  window.location.reload();
+}
+
