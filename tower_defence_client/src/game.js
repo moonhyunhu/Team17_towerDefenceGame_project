@@ -212,21 +212,28 @@ function gameLoop() {
   // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
   base.draw(ctx, baseImage);
 
+  let gameOver = false;
+
   for (let i = monsters.length - 1; i >= 0; i--) {
     const monster = monsters[i];
-    if (monster.hp > 0) {
-      const isDestroyed = monster.move(base);
-      if (isDestroyed) {
-        /* 게임 오버 */
-        alert("게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ");
-        location.reload();
+    
+    if (!gameOver) { // gameOver가 false인 경우에만 실행
+      if (monster.hp > 0) {
+        const isDestroyed = monster.move(base);
+        if (isDestroyed) {
+          /* 게임 오버 */
+          gameOver = true;
+          alert("게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ");
+          location.reload();
+        }
+        monster.draw(ctx);
+      } else {
+        /* 몬스터가 죽었을 때 */
+        monsters.splice(i, 1);
       }
-      monster.draw(ctx);
-    } else {
-      /* 몬스터가 죽었을 때 */
-      monsters.splice(i, 1);
     }
   }
+  
 
   requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
 }
