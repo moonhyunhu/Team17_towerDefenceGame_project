@@ -35,11 +35,12 @@ import { getStage, setStage } from '../models/stage.model.js';
 //import calculateTotalScore from '../utils/calculateTotalScore.js';
 //import { getUserItems } from '../models/item.model.js';
 
-export const moveStageHandler = (userId, payload) => {
+export const moveStageHandler = (userId, payload, socket) => {
+  
   // 유저의 현재 스테이지 배열을 가져오고, 최대 스테이지 ID를 찾는다.
   let currentStages = getStage(userId);
   if (!currentStages.length) {
-    return { status: 'fail', message: '해당스테이지에 유저가 존재하지 않습니다' };
+    return { status: 'fail', message: '스테이지에 유저가 존재하지 않습니다' };
   }
 
   // 오름차순 정렬 후 가장 큰 스테이지 ID 확인 = 가장 상위의 스테이지 = 현재 스테이지
@@ -52,7 +53,7 @@ export const moveStageHandler = (userId, payload) => {
   }
 
   // 게임 에셋에서 스테이지 정보 가져오기
-  const { stages } = getGameAssets();
+  const { stages,monsters } = getGameAssets();
 
   // 현재 스테이지의 정보를 stageTable 에서 가져옴
   const currentStageInfo = stages.data.find((stage) => stage.stage_id === payload.currentStage);
@@ -64,10 +65,20 @@ export const moveStageHandler = (userId, payload) => {
   if (!targetStageInfo) {
     return { status: 'fail', message: '데이터와 일치하는 다음 스테이지가 없습니다.' };
   }
+  const targetLevelInfo = monsters.data.find((monster)=>monster.monster_id === targetStageInfo.monster)
   //console.log(currentStage)
-  //console.log(currentStageInfo)
-  //console.log(targetStageInfo)
+  // console.log(currentStageInfo)
+  // console.log(targetStageInfo)
+  console.log(targetLevelInfo.monster_level)
+
   setStage(userId, payload.targetStage, payload.message);
+
+  socket.emit('NewStage', {
+    userId,
+    monsterLevel:targetLevelInfo.monster_level,
+    stage:payload.targetStage
+  });
+
   console.log(getStage(userId));
 
   return { status: 'success', handler: 11 };

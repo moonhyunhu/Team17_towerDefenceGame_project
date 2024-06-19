@@ -16,10 +16,13 @@
       background-color: #2d2d2d;
       flex-direction: column;
       font-family: Arial, sans-serif;
+      overflow: hidden; 
     }
     #gameCanvas {
       border: 2px solid #000;
       display: none;
+      width: 100%;
+      height: 100%;
     }
     .button-container {
       display: flex;
@@ -58,16 +61,18 @@
       const buttonContainer = document.getElementById("button-container");
       const accessToken = localStorage.getItem("accessToken");
       const userId = localStorage.getItem("userName");
-      let logoutTime; // 자동 로그아웃 시간 저장 변수
+      
+      
 
       // 로그인 상태 체크
       if (accessToken && userId) {
-        // 토큰 만료 시간 설정 (현재 시간으로부터 10분 후)
-        const expirationTime = new Date().getTime() + (10 * 60 * 1000); // 10분 = 600,000 밀리초
-
-        localStorage.setItem("logoutTime", expirationTime);
+        let logoutTime = localStorage.getItem("logoutTime");  //logoutTime을 가져오기
+        if (!logoutTime) {  //만약 logoutTime이 없을 경우 로컬스토리지에 저장
+        logoutTime = new Date().getTime() + (10 * 60 * 1000); // 10분 = 600,000 밀리초
+        localStorage.setItem("logoutTime", logoutTime);
+        }
         showLoggedInUI(userId);
-        startLogoutTimer(expirationTime); // 자동 로그아웃 타이머 시작
+        startLogoutTimer(logoutTime); // 자동 로그아웃 타이머 시작
       } else {
         showLoggedOutUI();
       }
@@ -79,6 +84,7 @@
           <button id="logoutButton">로그아웃</button>
           <button id="playButton">게임 플레이</button>
           <div id="logoutTimer">로그아웃까지 남은 시간: <span id="timer"></span></div>
+          <button id="timeExtend">로그인 시간 연장 </button>
         `;
 
         document.getElementById("logoutButton").addEventListener("click", () => {
@@ -88,6 +94,14 @@
         document.getElementById("playButton").addEventListener("click", () => {
           startGame();
         });
+
+        document.getElementById("timeExtend").addEventListener("click", () => {
+          extendTime();
+          location.reload();
+        });
+         // 로그인 시간 연장 로컬스토리지 넣기
+        const logoutTime = localStorage.getItem("logoutTime");
+        startLogoutTimer(logoutTime);
       }
 
       // 로그아웃 처리
@@ -104,6 +118,12 @@
         buttonContainer.style.display = "none";
         document.getElementById("gameCanvas").style.display = "block";
         import("./src/game.js");
+      }
+
+      //로그인 시간 연장
+      function extendTime() {
+      let logoutTime = new Date().getTime() + (10 * 60 * 1000); // 10분 = 600,000 밀리초
+      localStorage.setItem("logoutTime", logoutTime);
       }
 
       // 로그인 상태가 아닌 경우 UI 표시

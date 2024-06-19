@@ -5,7 +5,7 @@ import { loadGameAssets } from './init/assets.js';
 import userRouter from './routes/user.router.js';
 import cors from 'cors'; 
 import dotEnv from 'dotenv';
-
+import highScoreRouter  from './routes/highScore.router.js';
 
 const app = express();
 const PORT = 5555;
@@ -25,6 +25,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static('tower_defence_client'));
 
 app.use('/auth', [userRouter]);
+app.use('/auth', [userRouter,highScoreRouter])
 initSocket(server);
 
 server.listen(PORT, async () => {

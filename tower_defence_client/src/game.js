@@ -2,48 +2,53 @@ import { Base } from './base.js';
 import { Monster } from './monster.js';
 import { Tower } from './tower.js';
 import { sendEvent } from './socket.js';
-import monsterData from '../assets/monster.json' with { type: 'json' };
+//import monsterData from '../assets/monster.json' with { type: 'json' };
 import stageData from '../assets/stage.json' with { type: 'json' };
 import towerData from '../assets/tower.json' with { type: 'json' };
-import './socket.js';
+import { CLIENT_VERSION } from './Constants.js';
+//import './socket.js';
 
-/* 
-  어딘가에 엑세스 토큰이 저장이 안되어 있다면 로그인을 유도하는 코드를 여기에 추가해주세요!
-*/
+//access 토큰 로컬스토리지에 없을 경우 return
 const accessToken = localStorage.getItem('accessToken');
 if (!accessToken) {
   alert('로그인이 필요합니다.');
   window.location.href = 'index.html';
 }
 
+//monster.json 파일 가져오기(점수와 골드 획득용)
+const monsterDataResposne = await fetch('../assets/monster.json');
+const monsterData = await monsterDataResposne.json();
+
 let serverSocket; // 서버 웹소켓 객체
+
+let currentBoolean = false;
+let killCount = 0;
+let stage = 0;
+
+//const MONSTER_CONFIG = monsterData.data;
+const STAGE_CONFIG = stageData.data;
+const TOWER_CONFIG = towerData.data;
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-let currentBoolean = false;
-let killCount = 0;
-let stage =0;
-
-const MONSTER_CONFIG = monsterData.data;
-const STAGE_CONFIG = stageData.data;
-const TOWER_CONFIG = towerData.data;
-
 const NUM_OF_MONSTERS = 5; // 몬스터 개수
 
-let userGold = 0; // 유저 골드
+let userGold = 5000; // 유저 골드
 let base; // 기지 객체
-let baseHp = 0; // 기지 체력
+let baseHp = 5; // 기지 체력
 
-let towerCost = TOWER_CONFIG[0].tower_const; // 타워 구입 비용
+let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 0; // 초기 타워 개수
-let monsterLevel = MONSTER_CONFIG[0].monster_id; // 몬스터 레벨
-let monsterSpawnInterval = 0//STAGE_CONFIG[0].spawn_interval; // 몬스터 생성 주기
+let monsterLevel = 0; // 몬스터 레벨
+let monsterSpawnInterval = 0; // 몬스터 생성 주기
 const monsters = [];
 const towers = [];
 
 let score = 0; // 게임 점수
-let highScore = 0; // 기존 최고 점수
+let highScore = 0; // 기존 최고 점수 (개인)
+let highScoreAll = 0; // 기존 최고 점수 (전체)
+let highScoreMan = ''; // 최고 점수 유저
 let isInitGame = false;
 let pause = false; // 일시정지
 let speedMultiple = 1; // 배속
@@ -163,9 +168,9 @@ function getRandomPositionNearPath(maxDistance) {
 
 function placeInitialTowers() {
   /* 
-    타워를 초기에 배치하는 함수입니다.
-    무언가 빠진 코드가 있는 것 같지 않나요? 
-  */
+      타워를 초기에 배치하는 함수입니다.
+      무언가 빠진 코드가 있는 것 같지 않나요? 
+    */
   for (let i = 0; i < numOfInitialTowers; i++) {
     const { x, y } = getRandomPositionNearPath(200);
     const tower = new Tower(x, y, towerCost);
@@ -177,14 +182,15 @@ function placeInitialTowers() {
 
 function placeNewTower() {
   /* 
-    타워를 구입할 수 있는 자원이 있을 때 타워 구입 후 랜덤 배치하면 됩니다.
-    빠진 코드들을 채워넣어주세요! 
-  */
+      타워를 구입할 수 있는 자원이 있을 때 타워 구입 후 랜덤 배치하면 됩니다.
+      빠진 코드들을 채워넣어주세요! 
+    */
   const { x, y } = getRandomPositionNearPath(200);
   const tower = new Tower(x, y);
   towers.push(tower);
   tower.draw(ctx, towerImage);
 }
+sendEvent(15, { towers });
 
 function placeBase() {
   const lastPoint = monsterPath[monsterPath.length - 1];
@@ -203,13 +209,17 @@ function gameLoop() {
 
   ctx.font = '25px Times New Roman';
   ctx.fillStyle = 'skyblue';
-  ctx.fillText(`최고 기록: ${highScore}`, 100, 50); // 최고 기록 표시
+  ctx.fillText(`현재 계정 최고 기록: ${highScore}`, 100, 50); // 최고 기록 표시
   ctx.fillStyle = 'white';
   ctx.fillText(`점수: ${score}`, 100, 100); // 현재 스코어 표시
   ctx.fillStyle = 'yellow';
   ctx.fillText(`골드: ${userGold}`, 100, 150); // 골드 표시
   ctx.fillStyle = 'black';
   ctx.fillText(`현재 레벨: ${monsterLevel}`, 100, 200); // 최고 기록 표시
+  ctx.fillStyle = 'red';
+  ctx.fillText(`전체 계정 최고 기록: ${highScoreAll}`, 100, 250); //전체 최고 기록 표시
+  ctx.fillStyle = 'white';
+  ctx.fillText(`전체 계정 최고 기록 유저: ${highScoreMan}`, 100, 300); //전체 최고 기록 표시
 
   // 타워 그리기 및 몬스터 공격 처리
   towers.forEach((tower) => {
@@ -224,11 +234,12 @@ function gameLoop() {
           tower.attack(monster);
         }
       });
-    }});
+    }
+  });
 
   // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
   base.draw(ctx, baseImage);
-
+  let gameOver = false;
   for (let i = monsters.length - 1; i >= 0; i--) {
     const monster = monsters[i];
     if (monster.hp > 0) {
@@ -238,23 +249,42 @@ function gameLoop() {
         sendEvent(16, {});
         alert('게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ');
         location.reload();
+        gameOverScreen();
+        //highscore 비교 + 갱신
+        if (highScore < score) {
+          highScore = score;
+          // 서버로 최고 점수 업데이트 요청
+          fetch('http://localhost:5555/auth/highScore', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + accessToken,
+            },
+            body: JSON.stringify({ score: highScore }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              console.log('최고 점수 갱신 완료:', data);
+            })
+            .catch((error) => {
+              console.error('최고 점수 갱신 실패', error);
+            });
+        }
+        return;
       }
       monster.draw(ctx);
     } else {
       /* 몬스터가 죽었을 때 */
+      score += monsterData.data[i].score;
+      userGold += monsterData.data[i].monster_gold;
       monsters.splice(i, 1);
-      score += 20;
-      userGold += 100;
-      killCount++;
       if (score >= STAGE_CONFIG[0].score && !currentBoolean) {
         currentBoolean = true;
-        sendEvent(11, { currentStage: 1001, targetStage: 1002, message: 'changeStage' });
-        monsterLevel = MONSTER_CONFIG[1].monster_level
+        sendEvent(11, { currentStage: 1001, targetStage: 1002, message: '2레벨로 증가' });
       }
       if (score >= STAGE_CONFIG[1].score && currentBoolean) {
         currentBoolean = false;
-        sendEvent(11, { currentStage: 1002, targetStage: 1003, message: 'changeStage' });
-        monsterLevel = MONSTER_CONFIG[2].monster_level
+        sendEvent(11, { currentStage: 1002, targetStage: 1003, message: '3레벨로 증가' });
       }
     }
   }
@@ -272,7 +302,7 @@ function initGame() {
   placeInitialTowers(); // 설정된 초기 타워 개수만큼 사전에 타워 배치
   placeBase(); // 기지 배치
 
-  intervalId = setInterval(spawnMonster, (monsterSpawnInterval)); // 설정된 몬스터 생성 주기마다 몬스터 생성
+  intervalId = setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
   gameLoop(); // 게임 루프 최초 실행
   isInitGame = true;
 }
@@ -282,6 +312,7 @@ function pauseGame() {
   pause = true;
   document.body.removeChild(pauseButton);
   document.body.appendChild(replayButton);
+  clearInterval(intervalId);
 }
 
 function replayGame() {
@@ -289,6 +320,7 @@ function replayGame() {
   pause = false;
   document.body.removeChild(replayButton);
   document.body.appendChild(pauseButton);
+  intervalId = setInterval(spawnMonster, monsterSpawnInterval);
 }
 
 function gameSpeed() {
@@ -297,7 +329,7 @@ function gameSpeed() {
   document.body.removeChild(doubleSpeedButton);
   document.body.appendChild(speedButton);
   clearInterval(intervalId);
-  intervalId = setInterval(spawnMonster, (monsterSpawnInterval));
+  intervalId = setInterval(spawnMonster, monsterSpawnInterval);
 }
 
 function gameDoubleSpeed() {
@@ -306,7 +338,7 @@ function gameDoubleSpeed() {
   document.body.removeChild(speedButton);
   document.body.appendChild(doubleSpeedButton);
   clearInterval(intervalId);
-  intervalId = setInterval(spawnMonster, (monsterSpawnInterval / speedMultiple));
+  intervalId = setInterval(spawnMonster, monsterSpawnInterval / speedMultiple);
 }
 
 // 이미지 로딩 완료 후 서버와 연결하고 게임 초기화
@@ -320,28 +352,57 @@ Promise.all([
   /* 서버 접속 코드 (여기도 완성해주세요!) */
 
   serverSocket = io('http://localhost:5555', {
+    query: {
+      clientVersion: CLIENT_VERSION,
+    },
     auth: {
       token: accessToken, // 토큰이 저장된 어딘가에서 가져와야 합니다!
     },
   });
+  let userId = null;
+  serverSocket.on('connection', (data) => {
+    console.log('connection: ', data);
+    userId = data.uuid;
+  });
+
+  serverSocket.on('response', (data) => {
+    console.log(data);
+  });
+  const sendEvent = (handlerId, payload) => {
+    serverSocket.emit('event', {
+      userId,
+      clientVersion: CLIENT_VERSION,
+      handlerId,
+      payload,
+    });
+  };
 
   serverSocket.on('connect', () => {
     console.log('서버와 연결됨');
-    sendEvent(2, { message: 'gamestart' });
+    sendEvent(2, { message: '잘좀돼라' });
   });
 
   serverSocket.on('disconnect', () => {
     console.log('서버와 연결이 종료됨');
   });
-  serverSocket.on('gameStart',(data)=>{
+  serverSocket.on('gameStart', (data) => {
     console.log('게임 시작');
     stage = data.stage;
-
   });
-  serverSocket.on('gameEnd',(data)=>{});
-  serverSocket.on('initialTower',()=>{});
-  serverSocket.on('killMonster',(data)=>{
-
+  //serverSocket.on('message', (data) => {
+  //  console.log('서버가 보낸 메세지:', data);
+  //});
+  serverSocket.on('initialTower', (data) => {
+    console.log('최초타워 3개 지급!');
+    numOfInitialTowers = data.numOfInitialTowers;
+  });
+  serverSocket.on('killMonster', (data) => {
+    console.log('몬스터 처치');
+  });
+  serverSocket.on('NewStage', (data) => {
+    monsterLevel = data.monsterLevel;
+    stage = data.stage;
+    console.log('몬스터 레벨 증가');
   });
 
   /* 
@@ -364,7 +425,6 @@ Promise.all([
       initGame();
     }
   });
-  
 });
 const buyTowerButton = document.createElement('button');
 buyTowerButton.textContent = '타워 구입';
@@ -427,4 +487,49 @@ doubleSpeedButton.addEventListener('click', gameSpeed);
 
 document.body.appendChild(speedButton);
 
-initGame();
+//게임오버 시 나오는 스크린 함수
+function gameOverScreen() {
+  const gameOverElement = document.createElement('div');
+  gameOverElement.style.position = 'absolute';
+  gameOverElement.style.width = '100%';
+  gameOverElement.style.height = '100%';
+  gameOverElement.style.backgroundImage = 'url("../images/gameOver.png")';
+  gameOverElement.style.backgroundSize = 'cover'; //배경이미지 화면과 같이 설정
+  gameOverElement.style.fontSize = '40px';
+  gameOverElement.style.display = 'flex';
+  gameOverElement.style.justifyContent = 'center';
+  gameOverElement.style.alignItems = 'center';
+  gameOverElement.innerHTML = `
+  <div style="text-align: center;"> 
+  <h2 style="color: red";>Game Over</h2> 
+  <h3 style="color: red";>스파르타 본부를 지키지 못했습니다...</h3> 
+  <button id="restartButton" style="padding: 10px 20px; font-size: 24px; cursor: pointer;">게임 다시 시작</button> </div> `;
+
+  gameOverElement.querySelector('#restartButton').addEventListener('click', gameRestart);
+
+  // body에 gameOverElement 추가
+  document.body.appendChild(gameOverElement);
+}
+
+function gameRestart() {
+  location.reload();
+}
+
+// 최고 기록 점수 가져오기 (현재는 게임 시작할 때만 가져옴)
+fetch('http://localhost:5555/auth/highScore', {
+  method: 'GET',
+  headers: {
+    Authorization: 'Bearer ' + accessToken,
+  },
+})
+  .then((response) => response.json())
+  .then((data) => {
+    // console.log(data.highScoreAll[0])
+    highScore = +data.highScore.highScoreRecord;
+    highScoreAll = +data.highScoreAll[0].highScoreRecord;
+    highScoreMan = data.highScoreAll[0].userId;
+    initGame();
+  })
+  .catch((error) => {
+    console.error('최고 점수 가져오기 실패', error);
+  });
