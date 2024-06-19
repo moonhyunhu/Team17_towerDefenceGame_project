@@ -275,7 +275,7 @@ Promise.all([
 
   // 상태 동기화 이벤트 처리
   serverSocket.on('syncGameState', (data) => {
-    console.log('게임 상태 동기화', data);
+    console.log('게임 상태 동기화 완료!');
     towerCost = data.towerCost;
     monsterLevel = data.monsterLevel;
     monsterSpawnInterval = data.monsterSpawnInterval;
