@@ -26,7 +26,6 @@ router.post('/sign-in', async (req, res, next) => {
     console.log(token, userId);
     res.status(201).json({ accessToken: token ,userId: user.userId});
   } catch (error) {
-    console.error('로그인 에러:', error); 
     res.status(500).json({ message: '서버 오류' });
   }
 });

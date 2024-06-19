@@ -8,18 +8,16 @@ datasource db {
 }
 
 model user {
-  userId          String            @id @unique @map("user_id")
-  userPw          String            @map("user_pw")
-  highScoreRecord highScoreRecord[]
+  userId          String           @id @unique @map("user_id")
+  userPw          String           @map("user_pw")
+  highScoreRecord highScoreRecord?
 }
 
 model highScoreRecord {
   highScoreRecordId Int    @unique @default(autoincrement()) @map("high_score_record_id")
-  userId            String @map("user_id")
-  highScoreRecord   Int    @unique @default(0) @map("high_score_record")
+  userId            String @unique @map("user_id")
+  highScoreRecord   Int    @default(0) @map("high_score_record")
   user              user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
-
-  @@index([userId], map: "highScoreRecord_user_id_fkey")
 }
 
 model tower {
