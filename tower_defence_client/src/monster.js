@@ -24,7 +24,7 @@ export class Monster {
     this.attackPower = 10 + 1 * level; // 몬스터의 공격력 (기지에 가해지는 데미지)
   }
 
-  move(base) {
+  move(base, pause) {
     if (this.currentIndex < this.path.length - 1) {
       const nextPoint = this.path[this.currentIndex + 1];
       const deltaX = nextPoint.x - this.x;
@@ -35,7 +35,7 @@ export class Monster {
       if (distance < this.speed) {
         // 거리가 속도보다 작으면 다음 지점으로 이동시켜주면 됩니다!
         this.currentIndex++;
-      } else {
+      } else if (distance > this.speed && !pause) {
         // 거리가 속도보다 크면 일정한 비율로 이동하면 됩니다. 이 때, 단위 벡터와 속도를 곱해줘야 해요!
         this.x += (deltaX / distance) * this.speed; // 단위 벡터: deltaX / distance
         this.y += (deltaY / distance) * this.speed; // 단위 벡터: deltaY / distance
