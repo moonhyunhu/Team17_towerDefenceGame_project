@@ -29,9 +29,12 @@
   const monsters = [];
   const towers = [];
 
-  let score = 0; // 게임 점수
-  let highScore = 0; // 기존 최고 점수
-  let isInitGame = false;
+let score = 0; // 게임 점수
+let highScore = 0; // 기존 최고 점수
+let isInitGame = false;
+let pause = false; // 일시정지
+let speedMultiple = 1; // 배속
+let intervalId; // 몬스터 반복 소환
 
   // 이미지 로딩 파트
   const backgroundImage = new Image();
@@ -194,48 +197,39 @@
     ctx.fillStyle = 'black';
     ctx.fillText(`현재 레벨: ${monsterLevel}`, 100, 200); // 최고 기록 표시
 
-    // 타워 그리기 및 몬스터 공격 처리
-    towers.forEach((tower) => {
-      tower.draw(ctx, towerImage);
-      tower.updateCooldown();
+  // 타워 그리기 및 몬스터 공격 처리
+  towers.forEach((tower) => {
+    tower.draw(ctx, towerImage);
+    if (!pause) {
+      tower.updateCooldown(speedMultiple);
       monsters.forEach((monster) => {
         const distance = Math.sqrt(
           Math.pow(tower.x - monster.x, 2) + Math.pow(tower.y - monster.y, 2),
         );
-        // console.log('asdf', distance);
         if (distance < tower.range) {
           tower.attack(monster);
         }
       });
-    });
+    }});
 
-    // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
-    base.draw(ctx, baseImage);
+  // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
+  base.draw(ctx, baseImage);
 
-    let gameOver = false;
-
-    for (let i = monsters.length - 1; i >= 0; i--) {
-      const monster = monsters[i];
-
-      if (!gameOver) { // gameOver가 false인 경우에만 실행
-        if (monster.hp > 0) {
-          const isDestroyed = monster.move(base);
-          if (isDestroyed) {
-            /* 게임 오버 */
-            gameOver = true;
-            gameOverScreen(); //게임오버 스크린 함수 실행
-            return;
-          }
-          monster.draw(ctx);
-        } else {
-          /* 몬스터가 죽었을 때 */ console.log(monsterData);
-          score += monsterData.data[i].score; // 몬스터의 score를 현재 게임의 score에 추가
-          userGold += monsterData.data[i].monster_gold;
-          monsters.splice(i, 1);
-        }
+  for (let i = monsters.length - 1; i >= 0; i--) {
+    const monster = monsters[i];
+    if (monster.hp > 0) {
+      const isDestroyed = monster.move(base, pause, speedMultiple);
+      if (isDestroyed) {
+        /* 게임 오버 */
+        alert('게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ');
+        location.reload();
       }
+      monster.draw(ctx);
+    } else {
+      /* 몬스터가 죽었을 때 */
+      monsters.splice(i, 1);
     }
-    
+  }
 
     requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
   }
@@ -250,10 +244,42 @@
     placeInitialTowers(); // 설정된 초기 타워 개수만큼 사전에 타워 배치
     placeBase(); // 기지 배치
 
-    setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
-    gameLoop(); // 게임 루프 최초 실행
-    isInitGame = true;
-  }
+  intervalId = setInterval(spawnMonster, (monsterSpawnInterval)); // 설정된 몬스터 생성 주기마다 몬스터 생성
+  gameLoop(); // 게임 루프 최초 실행
+  isInitGame = true;
+}
+
+function pauseGame() {
+  console.log('게임 일시정지!');
+  pause = true;
+  document.body.removeChild(pauseButton);
+  document.body.appendChild(replayButton);
+}
+
+function replayGame() {
+  console.log('게임 다시 시작!');
+  pause = false;
+  document.body.removeChild(replayButton);
+  document.body.appendChild(pauseButton);
+}
+
+function gameSpeed() {
+  console.log('1배속!');
+  speedMultiple = 1;
+  document.body.removeChild(doubleSpeedButton);
+  document.body.appendChild(speedButton);
+  clearInterval(intervalId);
+  intervalId = setInterval(spawnMonster, (monsterSpawnInterval));
+}
+
+function gameDoubleSpeed() {
+  console.log('2배속!');
+  speedMultiple = 2;
+  document.body.removeChild(speedButton);
+  document.body.appendChild(doubleSpeedButton);
+  clearInterval(intervalId);
+  intervalId = setInterval(spawnMonster, (monsterSpawnInterval / speedMultiple));
+}
 
   // 이미지 로딩 완료 후 서버와 연결하고 게임 초기화
   Promise.all([
@@ -306,41 +332,52 @@
 
   buyTowerButton.addEventListener('click', placeNewTower);
 
-  document.body.appendChild(buyTowerButton);
+document.body.appendChild(buyTowerButton);
 
+const pauseButton = document.createElement('button');
+pauseButton.textContent = '||';
+pauseButton.style.position = 'absolute';
+pauseButton.style.top = '10px';
+pauseButton.style.right = '130px';
+pauseButton.style.padding = '11px 20px';
+pauseButton.style.fontSize = '16px';
+pauseButton.style.cursor = 'pointer';
 
-  //게임오버 시 나오는 스크린 함수
-  function gameOverScreen() {
-    const gameOverElement = document.createElement('div');
-    gameOverElement.style.position = 'absolute';
-    gameOverElement.style.width = '100%';
-    gameOverElement.style.height = '100%';
-    gameOverElement.style.backgroundImage= 'url("../images/gameOver.png")'; 
-    gameOverElement.style.backgroundSize = 'cover'; //배경이미지 화면과 같이 설정
-    gameOverElement.style.color = 'white';
-    gameOverElement.style.fontSize = '40px';
-    gameOverElement.style.display = 'flex';
-    gameOverElement.style.justifyContent = 'center';
-    gameOverElement.style.alignItems = 'center';
-    gameOverElement.innerHTML = `
-      <div style="text-align: center;">
-        <h2 style="color: red";>Game Over</h2>
-        <h3 style="color: red";>스파르타 본부를 지키지 못했습니다...</h3>
-        <button id="restartButton" style="padding: 10px 20px; font-size: 24px; cursor: pointer;">게임 다시 시작</button>
-      </div>  
-    `;
+pauseButton.addEventListener('click', pauseGame);
 
-    const restartButton = gameOverElement.querySelector('#restartButton');
-    restartButton.addEventListener('click', restartGame);
+const replayButton = document.createElement('button');
+replayButton.textContent = '▶';
+replayButton.style.position = 'absolute';
+replayButton.style.top = '10px';
+replayButton.style.right = '130px';
+replayButton.style.padding = '10px 16px';
+replayButton.style.fontSize = '16px';
+replayButton.style.cursor = 'pointer';
 
-    document.body.appendChild(gameOverElement);
+replayButton.addEventListener('click', replayGame);
 
-  }
+document.body.appendChild(pauseButton);
 
-  function restartGame() {
-    window.location.reload();
-  }
+const speedButton = document.createElement('button');
+speedButton.textContent = '1x';
+speedButton.style.position = 'absolute';
+speedButton.style.top = '10px';
+speedButton.style.right = '200px';
+speedButton.style.padding = '11px 16px';
+speedButton.style.fontSize = '16px';
+speedButton.style.cursor = 'pointer';
 
-  //monster.json 파일 가져오기
-  const monsterDataResponse = await fetch('/assets/monster.json');
-  const monsterData = await monsterDataResponse.json();
+speedButton.addEventListener('click', gameDoubleSpeed);
+
+const doubleSpeedButton = document.createElement('button');
+doubleSpeedButton.textContent = '2x';
+doubleSpeedButton.style.position = 'absolute';
+doubleSpeedButton.style.top = '10px';
+doubleSpeedButton.style.right = '200px';
+doubleSpeedButton.style.padding = '11px 16px';
+doubleSpeedButton.style.fontSize = '16px';
+doubleSpeedButton.style.cursor = 'pointer';
+
+doubleSpeedButton.addEventListener('click', gameSpeed);
+
+document.body.appendChild(speedButton);
