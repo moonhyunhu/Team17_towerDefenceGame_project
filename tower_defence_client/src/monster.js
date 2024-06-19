@@ -1,5 +1,5 @@
 export class Monster {
-  constructor(path, monsterImages, id, level, hp, gold, power, score) {
+  constructor(path, monsterImages, level) {
     // 생성자 안에서 몬스터의 속성을 정의한다고 생각하시면 됩니다!
     if (!path || path.length <= 0) {
       throw new Error("몬스터가 이동할 경로가 필요합니다.");
@@ -15,14 +15,13 @@ export class Monster {
     this.speed = 2; // 몬스터의 이동 속도
     this.image = monsterImages[this.monsterNumber]; // 몬스터 이미지
     this.level = level; // 몬스터 레벨
-    this.id = id; // 몬스터 id
     this.init(level);
   }
 
   init(level) {
-    this.maxHp = hp; // 몬스터의 현재 HP
+    this.maxHp = 100 + 10 * level; // 몬스터의 현재 HP
     this.hp = this.maxHp; // 몬스터의 현재 HP
-    this.attackPower = power; // 몬스터의 공격력 (기지에 가해지는 데미지)
+    this.attackPower = 10 + 1 * level; // 몬스터의 공격력 (기지에 가해지는 데미지)
   }
 
   move(base, pause, speedMultiple) {
