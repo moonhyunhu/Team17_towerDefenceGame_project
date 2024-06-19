@@ -7,6 +7,7 @@ export const purchaseTower = (userId, payload) => {
 
   // 유저의 골드 확인
   const userGold = getUserGold(userId);
+  console.log('타워핸들러.js', userId);
 
   // 타워 정보 확인
   const towerData = tower.data.find((data) => data.tower_id === payload.tower_id);

@@ -49,6 +49,7 @@ export const handlerEvent = (io, socket, data) => {
   }
   // 적절한 핸들러에 userID 와 payload를 전달하고 결과를 받습니다.
   const response = handler(data.userId, data.payload);
+  console.log('헬퍼.js', data.userId)
   // 만약 결과에 broadcast (모든 유저에게 전달)이 있다면 broadcast 합니다.
   if (response.broadcast) {
     io.emit('response', 'broadcast');

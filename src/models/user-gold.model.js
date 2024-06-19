@@ -9,6 +9,9 @@ export const createUserGold = (uuid) => {
 
 // Function to retrieve user's current gold amount
 export const getUserGold = (uuid) => {
+  console.log('유저골드 모델' ,uuid)
+  console.log(userGold);
+  console.log('이야앙', userGold[uuid])
   return userGold[uuid]; 
 };
 

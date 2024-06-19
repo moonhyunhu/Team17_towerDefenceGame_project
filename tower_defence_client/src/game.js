@@ -306,11 +306,6 @@ Promise.all([
     }
   */
 
-
-  serverSocket.on('connection', (data) => {
-    console.log('connection: ', data);
-  });
-
   serverSocket.on('userGold', (data) => {
     console.log('Received userGold event with data:', data); // Debug log
     userGold = data.userGold; // Update the client-side userGold with the received value
@@ -341,11 +336,6 @@ Promise.all([
     if (!isInitGame) {
       initGame();
     }
-  });
-
-
-  serverSocket.on('connection', (data) => {
-    console.log('connection: ', data);
   });
 });
 
