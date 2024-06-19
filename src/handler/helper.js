@@ -13,4 +13,10 @@ export const handleConnection = (socket, uuid) => {
   console.log(`Current users: `, getUser());
 
   socket.emit('connection', { uuid });
+  socket.emit('syncGameState', {
+    uuid,
+    towerCost: 3000,
+    monsterLevel: 1,
+    monsterSpawnInterval: 3000,
+  });
 };
