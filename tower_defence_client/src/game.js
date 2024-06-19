@@ -34,6 +34,7 @@
 let score = 0; // 게임 점수
 let highScore = 0; // 기존 최고 점수 (개인)
 let highScoreAll = 0; // 기존 최고 점수 (전체)
+let highScoreMan = ''; // 최고 점수 유저
 let isInitGame = false;
 let pause = false; // 일시정지
 let speedMultiple = 1; // 배속
@@ -201,6 +202,8 @@ let intervalId; // 몬스터 반복 소환
     ctx.fillText(`현재 레벨: ${monsterLevel}`, 100, 200); // 최고 기록 표시
     ctx.fillStyle= 'red';
     ctx.fillText(`전체 계정 최고 기록: ${highScoreAll}`, 100,250) //전체 최고 기록 표시
+    ctx.fillStyle= 'white';
+    ctx.fillText(`전체 계정 최고 기록 유저: ${highScoreMan}`, 100,300) //전체 최고 기록 표시
 
   // 타워 그리기 및 몬스터 공격 처리
   towers.forEach((tower) => {
@@ -437,7 +440,7 @@ function gameRestart(){
   location.reload();
 }
 
-// 최고 기록 점수 가져오기
+// 최고 기록 점수 가져오기 (현재는 게임 시작할 때만 가져옴)
 fetch('http://localhost:5555/auth/highScore', {
   method: 'GET',
   headers: {
@@ -446,9 +449,10 @@ fetch('http://localhost:5555/auth/highScore', {
 })
 .then(response => response.json())
 .then(data => {
-  console.log(data.highScoreAll[0])
+  // console.log(data.highScoreAll[0])
   highScore = +data.highScore.highScoreRecord;
   highScoreAll = +data.highScoreAll[0].highScoreRecord;
+  highScoreMan = data.highScoreAll[0].userId;
   initGame(); 
 })
 .catch(error => {
