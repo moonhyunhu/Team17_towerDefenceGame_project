@@ -2,8 +2,10 @@
 //서버에서는 socketId를 통해 접속 중이라는 상태를 확인 할 수 있다.
 //재 접속하면 기존 socketId가 아닌 새로운 id발급
 import { addUser } from '../models/user.model.js';
-//import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import { handleConnection, handleDisconnect, handleEvent } from './helper.js';
+import { createStage } from '../models/stage.model.js';
+
 
 const registerHandler = (io) => {
   //io.on = connection이벤트가 발생할때까지 대기 발생하면 뒤에 콜백함수 호출
@@ -11,8 +13,9 @@ const registerHandler = (io) => {
     //이벤트 처리
     //uuid생성,socketId생성
     //유저 등록 이벤트
-    const userUUID = 12345;
+    const userUUID = uuidv4();
     addUser({ uuid: userUUID, socketId: socket.id });
+    //createStage(userUUID);
 
     //
     handleConnection(socket, userUUID);

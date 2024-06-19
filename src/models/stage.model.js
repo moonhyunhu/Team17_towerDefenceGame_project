@@ -11,8 +11,8 @@ export const getStage = (uuid) => {
   return stages[uuid];
 };
 
-export const setStage = (uuid, id, payload) => {
-  return stages[uuid].push({ id, payload });
+export const setStage = (uuid, id, message) => {
+  return stages[uuid].push({ id, message });
 };
 
 export const clearStage = (uuid) => {

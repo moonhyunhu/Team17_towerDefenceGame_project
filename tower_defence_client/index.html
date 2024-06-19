@@ -1,63 +1,149 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="author" content="Changmin Kang" />
-    <title>내일배움캠프 Node.js 트랙 타워 디펜스 게임</title>
-    <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
-    <style>
-      body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        background-color: #2d2d2d;
-        flex-direction: column;
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Changmin Kang">
+  <title>내일배움캠프 Node.js 트랙 타워 디펜스 게임</title>
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #2d2d2d;
+      flex-direction: column;
+      font-family: Arial, sans-serif;
+    }
+    #gameCanvas {
+      border: 2px solid #000;
+      display: none;
+    }
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .button-container button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    h1 {
+      color: white;
+      margin-bottom: 20px;
+    }
+    #logoutTimer {
+      color: lightcoral;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="button-container" id="button-container">
+    <h1>내일배움캠프 Node.js 트랙 타워 디펜스 게임</h1>
+    <button id="registerButton">회원가입</button>
+    <button id="loginButton">로그인</button>
+  </div>
+  <canvas id="gameCanvas" width="1920" height="1080"></canvas>
+  <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+  <script src='/socket.io/socket.io.js'></script>
+  <script type="module">
+    document.addEventListener("DOMContentLoaded", () => {
+      const buttonContainer = document.getElementById("button-container");
+      const accessToken = localStorage.getItem("accessToken");
+      const userId = localStorage.getItem("userName");
+      let logoutTime; // 자동 로그아웃 시간 저장 변수
+
+      // 로그인 상태 체크
+      if (accessToken && userId) {
+        // 토큰 만료 시간 설정 (현재 시간으로부터 10분 후)
+        const expirationTime = new Date().getTime() + (10 * 60 * 1000); // 10분 = 600,000 밀리초
+
+        localStorage.setItem("logoutTime", expirationTime);
+        showLoggedInUI(userId);
+        startLogoutTimer(expirationTime); // 자동 로그아웃 타이머 시작
+      } else {
+        showLoggedOutUI();
       }
-      #gameCanvas {
-        border: 2px solid #000;
-        display: none;
-      }
-      .button-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-      }
-      .button-container button {
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="button-container">
-      <h1 style="color: white">내일배움캠프 Node.js 트랙 타워 디펜스 게임</h1>
-      <button id="registerButton">회원가입</button>
-      <button id="loginButton">로그인</button>
-      <button id="playButton">게임 플레이</button>
-    </div>
-    <canvas id="gameCanvas" width="1920" height="1080"></canvas>
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-    <script type="module">
-      document
-        .getElementById("registerButton")
-        .addEventListener("click", () => {
-          window.location.href = "register.html";
+
+      // 로그인 상태 UI 표시
+      function showLoggedInUI(userId) {
+        buttonContainer.innerHTML = `
+          <h1>환영합니다 ${userId}님</h1>
+          <button id="logoutButton">로그아웃</button>
+          <button id="playButton">게임 플레이</button>
+          <div id="logoutTimer">로그아웃까지 남은 시간: <span id="timer"></span></div>
+        `;
+
+        document.getElementById("logoutButton").addEventListener("click", () => {
+          logoutUser();
         });
 
-      document.getElementById("loginButton").addEventListener("click", () => {
-        window.location.href = "login.html";
-      });
+        document.getElementById("playButton").addEventListener("click", () => {
+          startGame();
+        });
+      }
 
-      document.getElementById("playButton").addEventListener("click", () => {
-        document.querySelector(".button-container").style.display = "none";
+      // 로그아웃 처리
+      function logoutUser() {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("userName");
+        localStorage.removeItem("logoutTime");
+        alert("로그아웃되었습니다.");
+        window.location.reload();
+      }
+
+      // 게임 시작
+      function startGame() {
+        buttonContainer.style.display = "none";
         document.getElementById("gameCanvas").style.display = "block";
         import("./src/game.js");
-      });
-    </script>
-  </body>
+      }
+
+      // 로그인 상태가 아닌 경우 UI 표시
+      function showLoggedOutUI() {
+        buttonContainer.innerHTML = `
+          <h1>내일배움캠프 Node.js 트랙 타워 디펜스 게임</h1>
+          <button id="registerButton">회원가입</button>
+          <button id="loginButton">로그인</button>
+        `;
+
+        document.getElementById("loginButton").addEventListener("click", () => {
+          window.location.href = "login.html";
+        });
+
+        document.getElementById("registerButton").addEventListener("click", () => {
+          window.location.href = "register.html";
+        });
+      }
+
+      // 자동 로그아웃 타이머 시작
+      function startLogoutTimer(expirationTime) {
+        const timerElement = document.getElementById("timer");
+
+        // 매 초마다 남은 시간 계산 및 업데이트
+        const timerInterval = setInterval(() => {
+          const currentTime = new Date().getTime();
+          const timeLeft = expirationTime - currentTime;
+
+          if (timeLeft > 0) {
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            timerElement.textContent = `${minutes}분 ${seconds}초`;
+          } else {
+            // 시간이 만료되면 자동 로그아웃 처리
+            clearInterval(timerInterval);
+            logoutUser();
+          }
+        }, 1000); // 1초마다 타이머 업데이트
+      }
+    });
+  </script>
+</body>
 </html>
