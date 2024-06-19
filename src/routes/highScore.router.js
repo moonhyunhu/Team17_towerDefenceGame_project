@@ -25,22 +25,27 @@ router.post('/highScore' , async (req,res,next)=>{
     const highScoreRecord = await prisma.highScoreRecord.findUnique({
         where: { userId: userId },
         });
-      
-    //최고점수보다 현재 스코어가 클 경우
-    if(highScoreRecord < score){
-        if (!highScoreRecord) {
+  //user가 첫번째 score일 경우
+    if (!highScoreRecord) {
             const record = await prisma.highScoreRecord.create({
                 data: { highScoreRecord: score, userId: userId },
             });
             res.json({ message: '최고 점수 생성 및 갱신' , highScore: record.highScoreRecord});
             return;
           }
-        else{
-            const record2 = await prisma.highScoreRecord.update({
-            data: {high_score : score},
-        })
-        res.json({message: '최고 점수 갱신', highScore: record2.highScoreRecord});
-    }}
+    //최고점수보다 현재 스코어가 클 경우
+    if (highScoreRecord && highScoreRecord.highScoreRecord < score) {
+      // 기존 기록 업데이트
+      const updatedRecord = await prisma.highScoreRecord.update({
+        where: { userId: userId },
+        data: { highScoreRecord: score },
+      });
+      res.json({ message: '최고 점수 갱신', highScore: updatedRecord.highScoreRecord });
+    } else {
+      // 현재 점수가 최고 점수보다 작거나 같으면 유지
+      res.json({ message: '최고 점수 유지 중', highScore: highScoreRecord.highScoreRecord });
+    }
+    
 }catch (error){
     console.log('최고점수 갱신 오류',error);
     next(error);
