@@ -280,21 +280,39 @@ function gameLoop() {
       const currentMonster = monsterData.find((data) => data.monster_level === monster.level);
       score += currentMonster.score;
       userGold += currentMonster.monster_gold;
-
-      // serverSocket.emit('monsterKill', { monsterLevel: monsters[i].level });
       monsters.splice(i, 1);
+      // handleMonsterKill(monster, i);
       let changeStageScore = stageData.find((data) => data.stage_id === currentStage);
       if (score > changeStageScore.score) {
         currentStage++;
         monsterLevel++;
         spawnBoss = true;
       }
-      console.log(`현재 스테이지 : ${currentStage - 1000}`);
     }
   }
 
   requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
 }
+
+// function handleMonsterKill(monster, index) {
+//   serverSocket.emit(
+//     'monsterKill',
+//     {
+//       monsterLevel: monster.level,
+//       currentStage,
+//       stageData,
+//       monsterData,
+//     },
+//     (response) => {
+//       userGold = response.userGold;
+//       score = response.score;
+//       currentStage = response.currentStage;
+//       monsterLevel = response.monsterLevel;
+//       spawnBoss = response.spawnBoss;
+//     },
+//   );
+//   monsters.splice(index, 1);
+// }
 
 function initGame() {
   if (isInitGame) {
@@ -373,6 +391,27 @@ Promise.all([
     console.log('connection: ', data);
   });
 
+  // serverSocket.on('monsterKill', ({ monsterLevel, currentStage, stageData, monsterData }) => {
+  //   const currentMonster = monsterData.find((data) => data.monster_level === monsterLevel);
+  //   score += currentMonster.score;
+  //   userGold += currentMonster.monster_gold;
+
+  //   let changeStageScore = stageData.find((data) => data.stage_id === currentStage);
+  //   if (score > changeStageScore.score) {
+  //     currentStage++;
+  //     monsterLevel++;
+  //     spawnBoss = true;
+  //   }
+
+  //   callback({
+  //     score: score,
+  //     userGold: userGold,
+  //     currentStage: currentStage,
+  //     monsterLevel: monsterLevel,
+  //     spawnBoss: spawnBoss,
+  //   });
+  // });
+  
   // serverSocket.on('monsterKill', (data) => {
   //   const monsterInfo = monsterData.data.find((info) => info.id === data.monsterId);
   //   if (monsterInfo) {
