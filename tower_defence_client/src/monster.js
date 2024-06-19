@@ -17,6 +17,7 @@ export class Monster {
     this.speed = 2; // 몬스터의 이동 속도
     this.image = monsterImages[this.monsterNumber]; // 몬스터 이미지
     this.level = level; // 몬스터 레벨
+    this.attack = false;
     this.init(level);
   }
 
@@ -25,7 +26,8 @@ export class Monster {
     this.hp = this.maxHp; // 몬스터의 현재 HP
     this.attackPower = monsterData.find((data) => data.monster_level === level).monster_power;  // 몬스터의 공격력 (기지에 가해지는 데미지)
     if(monsterData.find((data) => data.monster_level === level).monster_level > 10){
-      this.height += 50;
+      this.height = -200;
+      this.width = 200;
     }
   }
 
@@ -49,6 +51,7 @@ export class Monster {
     } else {
       const isDestroyed = base.takeDamage(this.attackPower); // 기지에 도달하면 기지에 데미지를 입힙니다!
       this.hp = 0; // 몬스터는 이제 기지를 공격했으므로 자연스럽게 소멸해야 합니다.
+      this.attack = true;
       return isDestroyed;
     }
   }

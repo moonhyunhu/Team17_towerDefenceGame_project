@@ -179,10 +179,13 @@ function placeNewTower() {
       타워를 구입할 수 있는 자원이 있을 때 타워 구입 후 랜덤 배치하면 됩니다.
       빠진 코드들을 채워넣어주세요! 
     */
-  const { x, y } = getRandomPositionNearPath(200);
-  const tower = new Tower(x, y);
-  towers.push(tower);
-  tower.draw(ctx, towerImage);
+  if (userGold >= towerCost) {
+    const { x, y } = getRandomPositionNearPath(200);
+    const tower = new Tower(x, y);
+    towers.push(tower);
+    userGold -= towerCost;
+    tower.draw(ctx, towerImage);
+  }
 }
 
 function placeBase() {
@@ -277,17 +280,22 @@ function gameLoop() {
       monster.draw(ctx);
     } else {
       /* 몬스터가 죽었을 때 */
-      const currentMonster = monsterData.find((data) => data.monster_level === monster.level);
-      score += currentMonster.score;
-      userGold += currentMonster.monster_gold;
-      monsters.splice(i, 1);
-      // handleMonsterKill(monster, i);
-      let changeStageScore = stageData.find((data) => data.stage_id === currentStage);
-      if (score > changeStageScore.score) {
-        currentStage++;
-        monsterLevel++;
-        spawnBoss = true;
+      if(!monster.attack){
+        const currentMonster = monsterData.find((data) => data.monster_level === monster.level);
+        score += currentMonster.score;
+        userGold += currentMonster.monster_gold;
+
+        monsters.splice(i, 1);
+
+        let changeStageScore = stageData.find((data) => data.stage_id === currentStage);
+        if (score > changeStageScore.score) {
+          currentStage++;
+          spawnBoss = true;
+        }
+      } else{
+        monsters.splice(i, 1);
       }
+      // handleMonsterKill(monster, i);     
     }
   }
 
@@ -411,7 +419,7 @@ Promise.all([
   //     spawnBoss: spawnBoss,
   //   });
   // });
-  
+
   // serverSocket.on('monsterKill', (data) => {
   //   const monsterInfo = monsterData.data.find((info) => info.id === data.monsterId);
   //   if (monsterInfo) {
