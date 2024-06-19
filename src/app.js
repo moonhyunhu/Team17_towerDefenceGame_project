@@ -6,9 +6,8 @@ import { loadGameAssets } from './init/assets.js';
 import cors from 'cors'; 
 import dotEnv from 'dotenv';
 
-
 const app = express();
-const PORT = DATABASE_PORT;
+const PORT = 5555;
 const server = createServer(app);
 
 // 특정 도메인만 허용하는 CORS 설정
