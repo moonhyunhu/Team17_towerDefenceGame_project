@@ -2,14 +2,16 @@
   import { Monster } from './monster.js';
   import { Tower } from './tower.js';
 
-  /* 
-    어딘가에 엑세스 토큰이 저장이 안되어 있다면 로그인을 유도하는 코드를 여기에 추가해주세요!
-  */
+  //access 토큰 로컬스토리지에 없을 경우 return
   const accessToken = localStorage.getItem('accessToken');
   if (!accessToken) {
     alert('로그인이 필요합니다.');
     window.location.href = 'index.html';
   }
+
+  //monster.json 파일 가져오기(점수와 골드 획득용)
+  const monsterDataResposne = await fetch('../assets/monster.json');
+  const monsterData = await monsterDataResposne.json();
 
   let serverSocket; // 서버 웹소켓 객체
 
@@ -214,19 +216,21 @@ let intervalId; // 몬스터 반복 소환
 
   // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
   base.draw(ctx, baseImage);
-
+  let gameOver = false;
   for (let i = monsters.length - 1; i >= 0; i--) {
     const monster = monsters[i];
     if (monster.hp > 0) {
       const isDestroyed = monster.move(base, pause, speedMultiple);
       if (isDestroyed) {
         /* 게임 오버 */
-        alert('게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ');
-        location.reload();
+        gameOverScreen();
+        return;
       }
       monster.draw(ctx);
     } else {
       /* 몬스터가 죽었을 때 */
+      score += monsterData.data[i].score;
+      userGold += monsterData.data[i].monster_gold;
       monsters.splice(i, 1);
     }
   }
@@ -381,3 +385,30 @@ doubleSpeedButton.style.cursor = 'pointer';
 doubleSpeedButton.addEventListener('click', gameSpeed);
 
 document.body.appendChild(speedButton);
+
+//게임오버 시 나오는 스크린 함수 
+function gameOverScreen() { 
+  const gameOverElement = document.createElement('div'); gameOverElement.style.position = 'absolute'; 
+  gameOverElement.style.width = '100%'; 
+  gameOverElement.style.height = '100%'; 
+  gameOverElement.style.backgroundImage= 'url("../images/gameOver.png")'; 
+  gameOverElement.style.backgroundSize = 'cover'; //배경이미지 화면과 같이 설정 
+  gameOverElement.style.fontSize = '40px'; 
+  gameOverElement.style.display = 'flex'; 
+  gameOverElement.style.justifyContent = 'center'; 
+  gameOverElement.style.alignItems = 'center'; 
+  gameOverElement.innerHTML = `
+  <div style="text-align: center;"> 
+  <h2 style="color: red";>Game Over</h2> 
+  <h3 style="color: red";>스파르타 본부를 지키지 못했습니다...</h3> 
+  <button id="restartButton" style="padding: 10px 20px; font-size: 24px; cursor: pointer;">게임 다시 시작</button> </div> `;
+
+  gameOverElement.querySelector('#restartButton').addEventListener('click', gameRestart);
+
+  // body에 gameOverElement 추가
+  document.body.appendChild(gameOverElement);
+}
+
+function gameRestart(){
+  location.reload();
+}
