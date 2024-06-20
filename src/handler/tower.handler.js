@@ -31,13 +31,8 @@ export const endTower = async (uuid,payload) => {
 export const purchaseTower = (userId, payload) => {
   const { towers } = getGameAssets();
 
-  // 유저의 골드 확인
-  const userGold = getUserGold(userId);
-
-  if (typeof userGold !== 'number' || isNaN(userGold)) {
-    throw new Error(`Invalid user gold value: ${userGold}`);
-  }
-
+  // // 유저의 골드 확인
+  // const userGold = getUserGold(userId);
 
   // 타워 정보 확인
   const towerData = towers.data.find((data) => data.tower_id === payload.tower_id);
@@ -47,16 +42,16 @@ export const purchaseTower = (userId, payload) => {
 
   // 타워 가격 확인
   const towerCost = towerData.tower_cost;
+  const clientGold = payload.userGold;
 
-  if (typeof towerCost !== 'number' || isNaN(towerCost)) {
-    throw new Error(`Invalid tower cost value: ${towerCost}`);
-  }
-
+  // console.log(`User ID: ${userId}`);
+  // console.log(`Client Gold: ${clientGold}`);
+  // console.log(`Tower Cost: ${towerCost}`);
 
   // 서버 유저 골드랑 클라이언트 유저 골드가 일치하는지
-  if (userGold >= towerCost) {
-    const newUserGold = userGold - towerCost;
-    if (newUserGold === payload.userGold) {
+  if (clientGold >= towerCost) {
+    const newUserGold = clientGold - towerCost;
+
       updateUserGold(userId, newUserGold);
       
       // 유저의 타워 목록에 타워 추가
@@ -65,7 +60,7 @@ export const purchaseTower = (userId, payload) => {
         x: payload.position.x,
         y: payload.position.y,
       });
-    }
+    
 
     // Check if tower has been added successfully
     const userTowers = getUserTowers(userId);
@@ -89,7 +84,7 @@ export const purchaseTower = (userId, payload) => {
       newGoldAmount: currentUserGold,
     };
   } else {
-    const neededGold = towerCost - userGold;
+    const neededGold = towerCost - clientGold;
     return { status: 'fail', message: `타워 구매 실패하였습니다. ${neededGold} 골드가 더 필요합니다.` };
   }
 };
