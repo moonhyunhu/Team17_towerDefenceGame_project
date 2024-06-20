@@ -13,3 +13,13 @@ export const gameStart = (userid, payload, socket) => {
 
   return { status: 'success', handler: 2 };
 };
+
+export const gameEnd = (userid, payload, socket)=>{
+  const {score} = payload;
+  console.log(score);
+  socket.emit('gameEnd',{
+    userid,
+    score,
+  })
+  return { status: 'success', handler: 3 };
+}

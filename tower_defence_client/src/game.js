@@ -176,9 +176,8 @@ function placeInitialTowers() {
     const tower = new Tower(x, y, towerCost);
     towers.push(tower);
     tower.draw(ctx, towerImage);
-    
   }
-  console.log(towers)
+  console.log(towers);
   sendEvent(15, { towers });
 }
 
@@ -208,7 +207,7 @@ function spawnMonster() {
       spawnBoss = false;
       let currentMonster = stageData.find((data) => data.stage_id === currentStage).monster;
       monsterLevel = monsterData.find((data) => data.monster_id === currentMonster).monster_level;
-      monsters.push(new Monster(monsterPath, monsterImages, monsterLevel + 10));
+      monsters.push(new Monster(monsterPath, monsterImages, monsterLevel + 9));
     } else {
       let currentMonster = stageData.find((data) => data.stage_id === currentStage).monster;
       monsterLevel = monsterData.find((data) => data.monster_id === currentMonster).monster_level;
@@ -262,6 +261,7 @@ function gameLoop() {
       if (isDestroyed) {
         /* 게임 오버 */
         sendEvent(16, {});
+        sendEvent(3, { score });
         gameOverScreen();
         gameOver = true;
         //highscore 비교 + 갱신
@@ -310,11 +310,13 @@ function gameLoop() {
         let changeStageScore = stageData.find((data) => data.stage_id === currentStage);
         if (score >= changeStageScore.score) {
           sendEvent(25, {}); //보스 소환
-          sendEvent(11, {
-            currentStage: currentStage,
-            targetStage: currentStage + 1,
-            message: '레벨증가!',
-          }); // 스테이지 이동
+          if (currentStage < 1005) {
+            sendEvent(11, {
+              currentStage: currentStage,
+              targetStage: currentStage + 1,
+              message: '레벨증가!',
+            }); // 스테이지 이동
+          }
           //currentStage++;
         }
       } else {
@@ -444,6 +446,9 @@ Promise.all([
   serverSocket.on('gameStart', (data) => {
     console.log('게임 시작');
     stage = data.stage;
+  });
+  serverSocket.on('gameEnd', (data) => {
+    console.log('게임 종료 점수:', data.score);
   });
   serverSocket.on('message', (data) => {
     console.log('서버가 보낸 메세지:', data);
@@ -628,9 +633,9 @@ fetch('http://localhost:5555/auth/highScore', {
 })
   .then((response) => response.json())
   .then((data) => {
-    highScore = +data.highScore; 
-    highScoreAll = +data.highScoreAll.highScore; 
-    highScoreMan = data.highScoreAll.userId; 
+    highScore = +data.highScore;
+    highScoreAll = +data.highScoreAll.highScore;
+    highScoreMan = data.highScoreAll.userId;
     initGame();
   })
   .catch((error) => {
