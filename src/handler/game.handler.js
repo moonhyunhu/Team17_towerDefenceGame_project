@@ -5,7 +5,6 @@ export const gameStart = (userid, payload, socket) => {
   clearStage(userid);
   setStage(userid, stages.data[0].stage_id, payload.message);
 
-  console.log(userid);
   socket.emit('gameStart', {
     userid,
     stage: stages.data[0].stage_id,

@@ -3,9 +3,7 @@
 //재 접속하면 기존 socketId가 아닌 새로운 id발급
 import { addUser } from '../models/user.model.js';
 import { v4 as uuidv4 } from 'uuid';
-import { handleConnection, handleDisconnect, handleEvent } from './helper.js';
-import { clearStage, createStage, setStage } from '../models/stage.model.js';
-import { getGameAssets } from '../init/assets.js';
+import { handleConnection, handleDisconnect, handleEvent } from './helper.js'
 import { createUserGold } from '../models/user-gold.model.js';
 
 
