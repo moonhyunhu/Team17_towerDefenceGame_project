@@ -410,7 +410,7 @@ Promise.all([
     sendEvent(2, { message: '잘좀돼라' });
   });
 
-  serverSocket.on('response', (data) => {
+  serverSocket.on('response1', (data) => {
     console.log(data);
   });
   sendEvent = (handlerId, payload) => {
