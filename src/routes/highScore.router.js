@@ -77,12 +77,18 @@ router.get('/highScore', async (req, res, next) => {
         take: 1, // 가장 높은 점수 하나만 가져오도록 설정
       })
       console.log(highScoreRecordAll);
+      
+      //예외 처리
+      const highestScore = highScoreRecordAll.length > 0 ? highScoreRecordAll[0].highScoreRecord : 0;
+      const highestScoreUser = highScoreRecordAll.length > 0 ? highScoreRecordAll[0].userId : 'none';
   
-      if (!highScoreRecordPerson) {
-        return res.status(404).json({ message: '기록이 없습니다.' });
-      }
-  
-      res.json({ highScore: highScoreRecordPerson , highScoreAll: highScoreRecordAll }); // 최고 점수 반환
+      res.json({
+        highScore: highScoreRecordPerson ? highScoreRecordPerson.highScoreRecord : 0,
+        highScoreAll: {
+          highScore: highestScore,
+          userId: highestScoreUser,
+        },
+      });
     } catch (error) {
       console.log('최고 점수 가져오기 오류', error);
       next(error);

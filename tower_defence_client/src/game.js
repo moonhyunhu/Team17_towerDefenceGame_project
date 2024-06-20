@@ -262,8 +262,6 @@ function gameLoop() {
       if (isDestroyed) {
         /* 게임 오버 */
         sendEvent(16, {});
-        alert('게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ');
-        location.reload();
         gameOverScreen();
         gameOver = true;
         //highscore 비교 + 갱신
@@ -630,10 +628,9 @@ fetch('http://localhost:5555/auth/highScore', {
 })
   .then((response) => response.json())
   .then((data) => {
-    // console.log(data.highScoreAll[0])
-    highScore = +data.highScore.highScoreRecord;
-    highScoreAll = +data.highScoreAll[0].highScoreRecord;
-    highScoreMan = data.highScoreAll[0].userId;
+    highScore = +data.highScore; 
+    highScoreAll = +data.highScoreAll.highScore; 
+    highScoreMan = data.highScoreAll.userId; 
     initGame();
   })
   .catch((error) => {
