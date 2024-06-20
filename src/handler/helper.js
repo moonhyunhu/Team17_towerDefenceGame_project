@@ -49,9 +49,9 @@ export const handleEvent = (io, socket, data) => {
   }
 
   const response = handler(data.userId, data.payload, socket, io);
-  if (response.broadcast) {
-    io.emit('response', response);
+  if (response?.broadcast) {
+    io.emit('response1', response);
     return;
   }
-  socket.emit('response', response);
+  socket.emit('response1', response);
 };
