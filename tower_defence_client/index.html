@@ -92,6 +92,7 @@
         });
 
         document.getElementById("playButton").addEventListener("click", () => {
+          GameStartExtendTime();
           startGame();
         });
 
@@ -113,6 +114,11 @@
         window.location.reload();
       }
 
+      //로그인 시간 연장
+      function extendTime() {
+      let logoutTime = new Date().getTime() + (10 * 60 * 1000); // 10분 = 600,000 밀리초
+      localStorage.setItem("logoutTime", logoutTime);
+      }
       // 게임 시작
       function startGame() {
         buttonContainer.style.display = "none";
@@ -120,9 +126,9 @@
         import("./src/game.js");
       }
 
-      //로그인 시간 연장
-      function extendTime() {
-      let logoutTime = new Date().getTime() + (10 * 60 * 1000); // 10분 = 600,000 밀리초
+      //게임 시작 누를 시 로그인 시간 연장
+      function GameStartExtendTime() {
+      let logoutTime = new Date().getTime() + (10 * 60 * 1000); 
       localStorage.setItem("logoutTime", logoutTime);
       }
 
