@@ -1,9 +1,7 @@
 import { Base } from './base.js';
 import { Monster } from './monster.js';
 import { Tower } from './tower.js';
-//import { sendEvent } from './socket.js';
 import { CLIENT_VERSION } from './Constants.js';
-//import './socket.js';
 
 //access 토큰 로컬스토리지에 없을 경우 return
 const accessToken = localStorage.getItem('accessToken');
@@ -22,8 +20,14 @@ const stageDataResponse = await fetch('../assets/stage.json');
 const stageInfo = await stageDataResponse.json();
 const stageData = stageInfo.data;
 
+//tower.json 파일 가져오기(타워 금액 & 아이디값 불러오는용)
+const towerDataResponse = await fetch('../assets/tower.json');
+const towerInfo = await towerDataResponse.json();
+const towerData = towerInfo.data;
+
 let serverSocket; // 서버 웹소켓 객체
 let sendEvent;
+let userId = null;
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -31,7 +35,7 @@ const ctx = canvas.getContext('2d');
 const NUM_OF_MONSTERS = 5; // 몬스터 개수
 let stage = 0;
 
-let userGold = 5000; // 유저 골드
+let userGold = 0; // 유저 골드
 let base; // 기지 객체
 let baseHp = 5000; // 기지 체력
 
@@ -186,14 +190,28 @@ function placeNewTower() {
       타워를 구입할 수 있는 자원이 있을 때 타워 구입 후 랜덤 배치하면 됩니다.
       빠진 코드들을 채워넣어주세요! 
     */
-  if (userGold >= towerCost) {
-    const { x, y } = getRandomPositionNearPath(200);
-    const tower = new Tower(x, y);
-    towers.push(tower);
-    userGold -= towerCost;
-    tower.draw(ctx, towerImage);
-  }
-}
+      let lowestLevelTower = towerData.find((data) => data.tower_level === 1);
+
+      if (userGold >= towerCost) {
+        const { x, y } = getRandomPositionNearPath(200);
+        const tower = new Tower(x, y, towerCost);
+        towers.push(tower);
+        tower.draw(ctx, towerImage);
+    
+        userGold -= towerCost;
+    
+        const payload = {
+          userGold,
+          tower_id: lowestLevelTower.tower_id,
+          position: { x, y },
+        };
+    
+        sendEvent(13, payload);
+    
+      } else {
+        console.log(`골드가 부족합니다 현재 나의 골드:${userGold}`);
+      }
+    }
 
 function placeBase() {
   const lastPoint = monsterPath[monsterPath.length - 1];
@@ -329,25 +347,6 @@ function gameLoop() {
   requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
 }
 
-// function handleMonsterKill(monster, index) {
-//   serverSocket.emit(
-//     'monsterKill',
-//     {
-//       monsterLevel: monster.level,
-//       currentStage,
-//       stageData,
-//       monsterData,
-//     },
-//     (response) => {
-//       userGold = response.userGold;
-//       score = response.score;
-//       currentStage = response.currentStage;
-//       monsterLevel = response.monsterLevel;
-//       spawnBoss = response.spawnBoss;
-//     },
-//   );
-//   monsters.splice(index, 1);
-// }
 
 function initGame() {
   if (isInitGame) {
@@ -438,6 +437,7 @@ Promise.all([
 
   serverSocket.on('connect', () => {
     console.log('서버와 연결됨');
+    serverSocket.emit('requestUserGold');
   });
 
   serverSocket.on('disconnect', () => {
@@ -466,42 +466,15 @@ Promise.all([
       initGame();
     }
   */
-
-  // serverSocket.on('monsterKill', ({ monsterLevel, currentStage, stageData, monsterData }) => {
-  //   const currentMonster = monsterData.find((data) => data.monster_level === monsterLevel);
-  //   score += currentMonster.score;
-  //   userGold += currentMonster.monster_gold;
-
-  //   let changeStageScore = stageData.find((data) => data.stage_id === currentStage);
-  //   if (score > changeStageScore.score) {
-  //     currentStage++;
-  //     monsterLevel++;
-  //     spawnBoss = true;
-  //   }
-
-  //   callback({
-  //     score: score,
-  //     userGold: userGold,
-  //     currentStage: currentStage,
-  //     monsterLevel: monsterLevel,
-  //     spawnBoss: spawnBoss,
-  //   });
-  // });
-
-  // serverSocket.on('monsterKill', (data) => {
-  //   const monsterInfo = monsterData.data.find((info) => info.id === data.monsterId);
-  //   if (monsterInfo) {
-  //     score += monsterInfo.score;
-  //     userGold += monsterInfo.monster_gold;
-  //   }
-  //   let changeStageScore = stageData.find((data) => data.stage_id === currentStage);
-  //   if (score > changeStageScore.score) {
-  //     currentStage++;
-  //     monsterLevel++;
-  //     spawnBoss = true;
-  //   }
-  //   console.log(`현재 스테이지 : ${currentStage - 1000}`);
-  // });
+    serverSocket.on('connection', (data) => {
+      console.log('connection: ', data);
+    });
+  
+    serverSocket.on('userGold', (data) => {
+      console.log('Received userGold event with data:', data); // Debug log
+      userGold = data.userGold; // Update the client-side userGold with the received value
+      console.log('User Gold:', userGold);
+    });
 
   // 상태 동기화 이벤트 처리
   serverSocket.on('syncGameState', (data) => {
@@ -534,6 +507,7 @@ Promise.all([
     console.log('보스가 나타났다!');
   });
 });
+
 export { sendEvent };
 const buyTowerButton = document.createElement('button');
 buyTowerButton.textContent = '타워 구입';
