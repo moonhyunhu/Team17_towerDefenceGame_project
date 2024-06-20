@@ -208,7 +208,7 @@ function placeNewTower() {
         sendEvent(13, payload);
     
       } else {
-        console.log(`골드가 부족합니다 현재 나의 골드:${userGold}`);
+        console.log(`골드가 부족합니다 현재 나의 골드:${towerCost-=userGold}`);
       }
     }
 
