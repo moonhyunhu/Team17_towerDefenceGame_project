@@ -260,8 +260,6 @@ function gameLoop() {
       if (isDestroyed) {
         /* 게임 오버 */
         sendEvent(16, {});
-        alert('게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ');
-        location.reload();
         gameOverScreen();
         gameOver = true;
         //highscore 비교 + 갱신
