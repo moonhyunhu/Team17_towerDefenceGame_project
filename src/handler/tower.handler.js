@@ -27,11 +27,16 @@ export const endTower = async (uuid,payload) => {
   return { status: 'success', handler: 16 };
 };
 
+//타워 구매
 export const purchaseTower = (userId, payload) => {
   const { towers } = getGameAssets();
 
   // 유저의 골드 확인
   const userGold = getUserGold(userId);
+
+  if (typeof userGold !== 'number' || isNaN(userGold)) {
+    throw new Error(`Invalid user gold value: ${userGold}`);
+  }
 
 
   // 타워 정보 확인
@@ -42,7 +47,11 @@ export const purchaseTower = (userId, payload) => {
 
   // 타워 가격 확인
   const towerCost = towerData.tower_cost;
-  
+
+  if (typeof towerCost !== 'number' || isNaN(towerCost)) {
+    throw new Error(`Invalid tower cost value: ${towerCost}`);
+  }
+
 
   // 서버 유저 골드랑 클라이언트 유저 골드가 일치하는지
   if (userGold >= towerCost) {

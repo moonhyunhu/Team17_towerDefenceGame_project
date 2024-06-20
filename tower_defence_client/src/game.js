@@ -35,7 +35,7 @@ const ctx = canvas.getContext('2d');
 const NUM_OF_MONSTERS = 5; // 몬스터 개수
 let stage = 0;
 
-let userGold = 0; // 유저 골드
+let userGold = 0; 
 let base; // 기지 객체
 let baseHp = 5000; // 기지 체력
 
@@ -410,6 +410,7 @@ Promise.all([
   serverSocket.on('response1', (data) => {
     console.log(data);
   });
+
   sendEvent = (handlerId, payload) => {
     serverSocket.emit('event', {
       userId,
@@ -453,8 +454,8 @@ Promise.all([
     });
   
     serverSocket.on('userGold', (data) => {
-      console.log('Received userGold event with data:', data); // Debug log
-      userGold = data.userGold; // Update the client-side userGold with the received value
+      console.log('Received userGold event with data:', data); 
+      userGold = data.userGold; 
       console.log('User Gold:', userGold);
     });
 
