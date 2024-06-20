@@ -1,19 +1,23 @@
 import {prisma} from '../utils/prisma/index.js'
-
-// prisma 사용으로 인해 로직 변경을 위한 회의 필요!
 const users = [];
 
-export const addUser = async (user) => {
+//유저 테이블 추가
+export const addUser = (user) => {
   users.push(user);
 };
 
-export const removeUser = (socketId) => {
-  const index = users.findIndex((user) => user.socketId === socketId);
+//유저 지우기
+export const removeUser = (uuid) => {
+  const index = users.findIndex((user) => user.uuid === uuid);
+  //index가 -1이면 이미 배열에 socketId가 없다는 뜻이므로 !사용
   if (index !== -1) {
+    //1개 삭제
     return users.splice(index, 1)[0];
   }
 };
 
-export const getUser = () => {
-    return users;
-}
+//유저 조회
+export const getUsers = () => {
+  return users;
+};
+

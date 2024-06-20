@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import initSocket from './init/socket.js';
 import { loadGameAssets } from './init/assets.js';
 import userRouter from './routes/user.router.js';
-import cors from 'cors';
+import cors from 'cors'; 
 import dotEnv from 'dotenv';
 import highScoreRouter  from './routes/highScore.router.js';
 
@@ -24,16 +24,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static('tower_defence_client'));
 
-initSocket(server);
-
+app.use('/auth', [userRouter]);
 app.use('/auth', [userRouter,highScoreRouter])
+initSocket(server);
 
 server.listen(PORT, async () => {
   console.log(`Server is running on port ${PORT}`)
 
   try {
     const assets = await loadGameAssets();
-    // console.log(assets);
+    //console.log(assets);
     console.log('Assets loaded successfully');
   } catch (error) {
     console.error('Failed to load game assets:', error);
