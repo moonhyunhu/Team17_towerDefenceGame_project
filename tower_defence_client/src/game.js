@@ -176,7 +176,9 @@ function placeInitialTowers() {
     const tower = new Tower(x, y, towerCost);
     towers.push(tower);
     tower.draw(ctx, towerImage);
+    
   }
+  console.log(towers)
   sendEvent(15, { towers });
 }
 
@@ -291,19 +293,31 @@ function gameLoop() {
       /* 몬스터가 죽었을 때 */
       if (!monster.attack) {
         const currentMonster = monsterData.find((data) => data.monster_level === monster.level);
-        sendEvent(20, {
-          killMonsterScore: currentMonster.score,
-          killMonsterGold: currentMonster.monster_gold,
-        });
+        //console.log(currentMonster)
+        if (currentMonster.monster_id > 110) {
+          sendEvent(21, {
+            killMonsterScore: currentMonster.score,
+            killMonsterGold: currentMonster.monster_gold,
+          }); //보스 처치 이벤트
+        } else {
+          sendEvent(20, {
+            killMonsterScore: currentMonster.score,
+            killMonsterGold: currentMonster.monster_gold,
+          }); //몬스터 처치 이벤트
+        }
         //score += currentMonster.score;
         //userGold += currentMonster.monster_gold;
         monsters.splice(i, 1);
 
         let changeStageScore = stageData.find((data) => data.stage_id === currentStage);
         if (score >= changeStageScore.score) {
-          spawnBoss = true;
-          sendEvent(11, { currentStage: currentStage, targetStage: currentStage + 1 });
-          currentStage++;
+          sendEvent(25, {}); //보스 소환
+          sendEvent(11, {
+            currentStage: currentStage,
+            targetStage: currentStage + 1,
+            message: '레벨증가!',
+          }); // 스테이지 이동
+          //currentStage++;
         }
       } else {
         monsters.splice(i, 1);
@@ -410,7 +424,7 @@ Promise.all([
     sendEvent(2, { message: '잘좀돼라' });
   });
 
-  serverSocket.on('response1', (data) => {
+  serverSocket.on('response', (data) => {
     console.log(data);
   });
   sendEvent = (handlerId, payload) => {
@@ -431,7 +445,6 @@ Promise.all([
   });
   serverSocket.on('gameStart', (data) => {
     console.log('게임 시작');
-    console.log(data.userId);
     stage = data.stage;
   });
   serverSocket.on('message', (data) => {
@@ -503,10 +516,19 @@ Promise.all([
     score += data.score;
     userGold += data.gold;
   });
+  serverSocket.on('killBoss', (data) => {
+    console.log('보스 몬스터 처치');
+    score += data.score;
+    userGold += data.gold;
+  });
   serverSocket.on('NewStage', (data) => {
     monsterLevel = data.monsterLevel;
     currentStage = data.stage;
     console.log('몬스터 레벨 증가', currentStage);
+  });
+  serverSocket.on('spawnBoss', (data) => {
+    spawnBoss = data.spawnBoss;
+    console.log('보스가 나타났다!');
   });
 });
 export { sendEvent };

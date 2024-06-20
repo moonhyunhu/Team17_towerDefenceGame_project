@@ -47,7 +47,7 @@ export const moveStageHandler = (userId, payload, socket) => {
   const currentStage = currentStages[currentStages.length - 1];
   console.log('받은 스테이지', currentStage);
   if(currentStage.id === 1005){
-    socket.emit('message','마지막 스테이지입니다')
+    socket.emit('message','종말을 맞이하라')
     socket.emit('NewStage', {
       userId,
       monsterLevel: 5,
