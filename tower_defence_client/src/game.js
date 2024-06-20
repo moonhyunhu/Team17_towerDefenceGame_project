@@ -546,10 +546,9 @@ fetch('http://localhost:5555/auth/highScore', {
 })
   .then((response) => response.json())
   .then((data) => {
-    // console.log(data.highScoreAll[0])
-    highScore = +data.highScore.highScoreRecord;
-    highScoreAll = +data.highScoreAll[0].highScoreRecord;
-    highScoreMan = data.highScoreAll[0].userId;
+    highScore = +data.highScore; 
+    highScoreAll = +data.highScoreAll.highScore; 
+    highScoreMan = data.highScoreAll.userId; 
     initGame();
   })
   .catch((error) => {
