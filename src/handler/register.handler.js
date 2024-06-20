@@ -6,6 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { handleConnection, handleDisconnect, handleEvent } from './helper.js';
 import { clearStage, createStage, setStage } from '../models/stage.model.js';
 import { getGameAssets } from '../init/assets.js';
+import { createUserGold } from '../models/user-gold.model.js';
+
 
 
 const registerHandler = (io) => {
@@ -18,6 +20,7 @@ const registerHandler = (io) => {
     
     addUser({ uuid: userUUID, socketId: socket.id });
     //createStage(userUUID);
+    createUserGold(userUUID);
 
     //
     handleConnection(socket, userUUID);
