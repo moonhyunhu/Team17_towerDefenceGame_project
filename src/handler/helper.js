@@ -4,6 +4,7 @@ import { CLIENT_VERSION } from '../constants.js';
 import handlerMappings from './handlerMapping.js';
 import { createStage, setStage, getStage } from '../models/stage.model.js';
 import { getGameAssets } from '../init/assets.js';
+import { getUserGold } from '../models/user-gold.model.js';
 
 export const handleConnection = (socket, uuid) => {
   console.log(`New user connected: ${uuid} with socket ID ${socket.id}`);
@@ -24,6 +25,16 @@ export const handleConnection = (socket, uuid) => {
     towerCost: 3000,
     monsterLevel: 1,
     monsterSpawnInterval: 3000,
+  });
+
+  socket.on('requestUserGold', () => {
+    const userGold = getUserGold(uuid);
+    console.log('userGold connected to client:', userGold);
+    socket.emit('userGold', { userGold });
+  });
+
+  socket.on('event', (data) => {
+    console.log('Received payload from client:', data.payload);
   });
 };
 
