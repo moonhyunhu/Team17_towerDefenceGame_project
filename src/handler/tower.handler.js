@@ -32,7 +32,7 @@ export const purchaseTower = (userId, payload) => {
   const { towers } = getGameAssets();
 
   // // 유저의 골드 확인
-  // const userGold = getUserGold(userId);
+  const userGold = getUserGold(userId);
 
   // 타워 정보 확인
   const towerData = towers.data.find((data) => data.tower_id === payload.tower_id);
@@ -47,10 +47,15 @@ export const purchaseTower = (userId, payload) => {
   // console.log(`User ID: ${userId}`);
   // console.log(`Client Gold: ${clientGold}`);
   // console.log(`Tower Cost: ${towerCost}`);
+  if (clientGold !== (userGold - towerCost)) {
+    console.log(clientGold)
+    console.log(userGold - towerCost)
+    return { status: 'fail', message: `타워의 금액이 맞지 않습니다` };
+  }
 
   // 서버 유저 골드랑 클라이언트 유저 골드가 일치하는지
-  if (clientGold >= towerCost) {
-    const newUserGold = clientGold - towerCost;
+  if (userGold >= towerCost) {
+    const newUserGold = userGold - towerCost;
 
       updateUserGold(userId, newUserGold);
       
