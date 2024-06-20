@@ -467,10 +467,7 @@ Promise.all([
       initGame();
     }
   */
-    serverSocket.on('connection', (data) => {
-      console.log('connection: ', data);
-    });
-  
+
     serverSocket.on('userGold', (data) => {
       console.log('Received userGold event with data:', data); 
       userGold = data.userGold; 
