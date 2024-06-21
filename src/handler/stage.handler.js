@@ -34,10 +34,7 @@ export const moveStageHandler = (userId, payload, socket) => {
     const targetLevelInfo = monsters.data.find(
       (monster) => monster.monster_id === targetStageInfo.monster,
     );
-    //console.log(currentStage)
-    // console.log(currentStageInfo)
-    // console.log(targetStageInfo)
-    //console.log(targetLevelInfo.monster_level);
+
     if (currentStage.id === 1005) {
       socket.emit('message', '종말을 맞이하라');
       socket.emit('NewStage', {
@@ -48,7 +45,6 @@ export const moveStageHandler = (userId, payload, socket) => {
     }
 
     setStage(userId, payload.targetStage, payload.message);
-    //console.log(payload.targetStage);
 
     socket.emit('NewStage', {
       userId,
