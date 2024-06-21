@@ -7,16 +7,17 @@ import { addUserTower, getUserTowers } from '../models/tower.model.js';
 export const startTower = async (uuid, payload) => {
   const { towers } = getGameAssets();
   const lowestLevelTower = towers.data.find((tower) => tower.tower_level === 1);
-  // console.log('저장할 타워ID: ', lowestLevelTower);
 
   const towerData = payload.towers;
-  //console.log('towerData: ', towerData);
+
   if (!towerData) {
     return { status: 'fail', message: '최초 타워 설치 오류' };
   }
-  if (towerData.length > 3 && towerData.length < 3) {
+
+  if (towerData.length !== 3) {
     return { status: 'fail', message: '최초 타워 개수 오류' };
   }
+
   for (let i = 0; i < towerData.length; i++) {
     addUserTower(uuid, {
       towerId: lowestLevelTower.tower_id,
@@ -33,7 +34,6 @@ export const startTower = async (uuid, payload) => {
 //게임 종료 시 데이터베이스에 저장된 타워 삭제
 export const endTower = async (uuid, payload) => {
   await prisma.tower.deleteMany();
-  console.log('게임 끝나고 타워데이터 삭제완료');
   return { status: 'success', handler: 16 };
 };
 
@@ -58,9 +58,6 @@ export const purchaseTower = (userId, payload) => {
   const towerCost = towerData.tower_cost;
   const clientGold = payload.userGold;
 
-  // console.log(`User ID: ${userId}`);
-  // console.log(`Client Gold: ${clientGold}`);
-  // console.log(`Tower Cost: ${towerCost}`);
   if (clientGold !== userGold - towerCost) {
     console.log(clientGold);
     console.log(userGold - towerCost);

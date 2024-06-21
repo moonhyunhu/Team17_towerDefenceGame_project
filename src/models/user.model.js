@@ -1,4 +1,3 @@
-import {prisma} from '../utils/prisma/index.js'
 const users = [];
 
 //유저 테이블 추가

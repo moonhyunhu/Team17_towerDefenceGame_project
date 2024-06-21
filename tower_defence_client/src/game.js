@@ -182,13 +182,7 @@ function placeInitialTowers() {
     towers.push(tower);
     tower.draw(ctx, towerImage);
   }
-  //console.log(towers);
-  //const payload = {
-  //  userGold,
-  //  tower_id: lowestLevelTower.tower_id,
-  //  position: { x, y },
-  //};
-  sendEvent(15, {towers});
+  sendEvent(15, { towers });
 }
 
 function placeNewTower() {
@@ -230,11 +224,12 @@ function spawnMonster() {
       spawnBoss = false;
       let currentMonster = stageData.find((data) => data.stage_id === currentStage).monster;
       monsterLevel = monsterData.find((data) => data.monster_id === currentMonster).monster_level;
-      monsters.push(new Monster(monsterPath, monsterImages, monsterLevel + 9));
+      monsters.push(new Monster(monsterPath, monsterImages, monsterLevel + 10));
     } else {
       let currentMonster = stageData.find((data) => data.stage_id === currentStage).monster;
       monsterLevel = monsterData.find((data) => data.monster_id === currentMonster).monster_level;
       monsters.push(new Monster(monsterPath, monsterImages, monsterLevel));
+      sendEvent(26,{monsterLevel})
     }
   }
 }
@@ -318,10 +313,13 @@ function gameLoop() {
         if (currentMonster.monster_id > 110) {
           sendEvent(21, {
             killMonsterId: currentMonster.monster_id,
+            killMonsterLevel: currentMonster.monster_level,
+            monster:monsters
           }); //보스 처치 이벤트
         } else {
           sendEvent(20, {
             killMonsterId: currentMonster.monster_id,
+            monsters
           }); //몬스터 처치 이벤트
         }
         //score += currentMonster.score;
@@ -488,21 +486,29 @@ Promise.all([
       initGame();
     }
   });
+
+  //몬스터 처치 이벤트처리
   serverSocket.on('killMonster', (data) => {
     console.log('몬스터 처치');
     score += data.score;
     userGold += data.gold;
   });
+
+  //보스 처치 이벤트처리
   serverSocket.on('killBoss', (data) => {
     console.log('보스 몬스터 처치');
     score += data.score;
     userGold += data.gold;
   });
+
+  //스테이지 레벨 증가 이벤트 처리
   serverSocket.on('NewStage', (data) => {
     monsterLevel = data.monsterLevel;
     currentStage = data.stage;
     console.log('몬스터 레벨 증가', currentStage);
   });
+
+  //보스 소환 이벤트 처리
   serverSocket.on('spawnBoss', (data) => {
     spawnBoss = data.spawnBoss;
     console.log('보스가 나타났다!');
@@ -510,6 +516,8 @@ Promise.all([
 });
 
 export { sendEvent };
+
+//타워 구입 버튼
 const buyTowerButton = document.createElement('button');
 buyTowerButton.textContent = '타워 구입';
 buyTowerButton.style.position = 'absolute';
@@ -523,6 +531,7 @@ buyTowerButton.addEventListener('click', placeNewTower);
 
 document.body.appendChild(buyTowerButton);
 
+//게임 정지 버튼
 const pauseButton = document.createElement('button');
 pauseButton.textContent = '||';
 pauseButton.style.position = 'absolute';
@@ -534,6 +543,7 @@ pauseButton.style.cursor = 'pointer';
 
 pauseButton.addEventListener('click', pauseGame);
 
+//게임 재개 버튼
 const replayButton = document.createElement('button');
 replayButton.textContent = '▶';
 replayButton.style.position = 'absolute';
@@ -547,6 +557,7 @@ replayButton.addEventListener('click', replayGame);
 
 document.body.appendChild(pauseButton);
 
+//게임 1배속 버튼
 const speedButton = document.createElement('button');
 speedButton.textContent = '1x';
 speedButton.style.position = 'absolute';
@@ -558,6 +569,7 @@ speedButton.style.cursor = 'pointer';
 
 speedButton.addEventListener('click', gameDoubleSpeed);
 
+//게임 2배속 버튼
 const doubleSpeedButton = document.createElement('button');
 doubleSpeedButton.textContent = '2x';
 doubleSpeedButton.style.position = 'absolute';
