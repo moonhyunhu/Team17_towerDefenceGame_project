@@ -5,7 +5,6 @@ export const gameStart = (userid, payload, socket) => {
   clearStage(userid);
   setStage(userid, stages.data[0].stage_id, payload.message);
 
-  console.log(userid);
   socket.emit('gameStart', {
     userid,
     stage: stages.data[0].stage_id,
@@ -13,3 +12,13 @@ export const gameStart = (userid, payload, socket) => {
 
   return { status: 'success', handler: 2 };
 };
+
+export const gameEnd = (userid, payload, socket)=>{
+  const {score} = payload;
+  console.log(score);
+  socket.emit('gameEnd',{
+    userid,
+    score,
+  })
+  return { status: 'success', handler: 3 };
+}

@@ -36,6 +36,7 @@ export const handleConnection = (socket, uuid) => {
   socket.on('event', (data) => {
     console.log('Received payload from client:', data.payload);
   });
+
 };
 
 export const handleDisconnect = (socket, uuid) => {
@@ -60,9 +61,9 @@ export const handleEvent = (io, socket, data) => {
   }
 
   const response = handler(data.userId, data.payload, socket, io);
-  if (response?.broadcast) {
-    io.emit('response1', response);
+  if (response?.broadcast) { //response가 broadcast형식을 띈다면 id.emit 그렇지 않으면 socket.emit
+    io.emit('response', response);
     return;
   }
-  socket.emit('response1', response);
+  socket.emit('response', response);
 };
