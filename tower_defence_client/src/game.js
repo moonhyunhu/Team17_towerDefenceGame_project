@@ -286,7 +286,7 @@ function gameLoop() {
         if (highScore < score) {
           highScore = score;
           // 서버로 최고 점수 업데이트 요청
-          fetch('http://localhost:5555/auth/highScore', {
+          fetch('http://qkqhajdcjddl.shop:5555/auth/highScore', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -409,7 +409,7 @@ Promise.all([
 ]).then(() => {
   /* 서버 접속 코드 (여기도 완성해주세요!) */
 
-  serverSocket = io('http://localhost:5555', {
+  serverSocket = io('http://qkqhajdcjddl.shop:5555', {
     query: {
       clientVersion: CLIENT_VERSION,
     },
@@ -612,7 +612,7 @@ function gameRestart() {
 }
 
 // 최고 기록 점수 가져오기 (현재는 게임 시작할 때만 가져옴)
-fetch('http://localhost:5555/auth/highScore', {
+fetch('http://qkqhajdcjddl.shop:5555/auth/highScore', {
   method: 'GET',
   headers: {
     Authorization: 'Bearer ' + accessToken,
