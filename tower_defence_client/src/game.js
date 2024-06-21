@@ -57,6 +57,7 @@ let speedMultiple = 1; // 배속
 let intervalId; // 몬스터 반복 소환
 let spawnBoss = false;
 let gameOver = false;
+let lastBoss = false;
 
 // 이미지 로딩 파트
 const backgroundImage = new Image();
@@ -230,7 +231,16 @@ function spawnMonster() {
       spawnBoss = false;
       let currentMonster = stageData.find((data) => data.stage_id === currentStage).monster;
       monsterLevel = monsterData.find((data) => data.monster_id === currentMonster).monster_level;
-      monsters.push(new Monster(monsterPath, monsterImages, monsterLevel + 9));
+      if(monsterLevel !== 5){
+        monsters.push(new Monster(monsterPath, monsterImages, monsterLevel + 9));
+      } else{
+        if(lastBoss){
+          monsters.push(new Monster(monsterPath, monsterImages, monsterLevel + 10));
+        } else {
+          monsters.push(new Monster(monsterPath, monsterImages, monsterLevel + 9));
+        }
+        lastBoss = true;
+      }
     } else {
       let currentMonster = stageData.find((data) => data.stage_id === currentStage).monster;
       monsterLevel = monsterData.find((data) => data.monster_id === currentMonster).monster_level;
